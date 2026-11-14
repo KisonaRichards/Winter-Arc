@@ -163,3 +163,12 @@
       touch-action: none;
       cursor: crosshair;
     }
+
+/* Celebration */
+@keyframes celRise { from { opacity: 0; transform: translateY(10px) scale(.96); } to { opacity: 1; transform: none; } }
+@keyframes celGlow { 0%,100% { text-shadow: 0 0 8px rgba(56,189,248,.5); } 50% { text-shadow: 0 0 22px rgba(56,189,248,.95); } }
+@keyframes celFlame { 0%,100% { transform: scale(1); } 50% { transform: scale(1.25); } }
+.cel-rise { opacity: 0; animation: celRise .45s cubic-bezier(.22,1,.36,1) forwards; }
+.cel-glow { animation: celGlow 1.6s ease-in-out infinite; }
+.cel-flame { display: inline-block; animation: celFlame .9s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .cel-rise { animation: none; opacity: 1; } .cel-glow, .cel-flame { animation: none; } }
