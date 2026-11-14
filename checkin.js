@@ -96,7 +96,7 @@
       if (enabled) {
         btn.disabled = false;
         btn.className = 'w-full py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-bold text-sm shadow-lg shadow-emerald-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer';
-        btn.innerHTML = '<i class="fa-solid fa-check-double"></i> "I Did That!" (+20 Coins, +25 XP)';
+        btn.innerHTML = '<i class="fa-solid fa-check-double"></i> "I Did That!"';
       } else {
         btn.disabled = true;
         btn.className = 'w-full py-3.5 rounded-xl bg-slate-800 text-slate-500 font-bold text-sm transition-all flex items-center justify-center gap-2 cursor-not-allowed';
@@ -172,9 +172,6 @@
         return;
       }
 
-      habit.completedDate = todayKey;
-      gameState.aspectXP[habit.aspectId] = (gameState.aspectXP[habit.aspectId] || 15) + 25;
-
       const caption = document.getElementById('proof-caption-input').value.trim();
       gameState.proofLogs.unshift({
         id: 'proof_' + Date.now(),
@@ -185,15 +182,7 @@
       });
 
       closeProofModal();
-      interactWithAvatar();
-      awardXPAndCoins(REWARD_XP_PER_PROOF, REWARD_COINS_PER_PROOF);
-
-      if (gameState.habits.every(h => h.completedDate === todayKey)) {
-        setTimeout(() => {
-          showToast(`100% DAILY HABITS LOCKED IN! Bonus +${ALL_DONE_BONUS_COINS} Coins!`, 'success');
-          awardXPAndCoins(ALL_DONE_BONUS_XP, ALL_DONE_BONUS_COINS);
-        }, 700);
-      }
+      completeQuest(habit, 'photo', { proofLogId: gameState.proofLogs[0].id });
     }
 
     function startNewDayCycle() {
@@ -206,4 +195,3 @@
       showToast(`Day ${gameState.streak} (${getCurrentGameDateFormatted()}) unlocked! Daily check-ins reset.`, 'info');
       triggerAvatarSpeech(`Day ${gameState.streak} of the Winter Arc! Fresh habits ready! ❄️`);
     }
-
