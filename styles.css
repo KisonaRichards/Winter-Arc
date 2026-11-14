@@ -1,0 +1,165 @@
+    /* Custom Game Animations & Glassmorphism */
+    body {
+      background-color: #060911;
+      color: #f8fafc;
+      overflow-x: hidden;
+      user-select: none;
+    }
+
+    input, textarea, select {
+      user-select: text;
+    }
+
+    .frost-panel {
+      background: rgba(16, 23, 41, 0.78);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(125, 211, 252, 0.16);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+    }
+
+    .frost-card {
+      background: linear-gradient(145deg, rgba(22, 32, 56, 0.85), rgba(11, 16, 29, 0.92));
+      border: 1px solid rgba(56, 189, 248, 0.18);
+      transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .frost-card:hover {
+      border-color: rgba(125, 211, 252, 0.45);
+      transform: translateY(-2px);
+    }
+
+    /* 3D Parchment Scroll Unroll Animation */
+    .scroll-perspective {
+      perspective: 1400px;
+    }
+
+    @keyframes scrollUnfurl3D {
+      0% {
+        opacity: 0;
+        transform: rotateX(78deg) scaleY(0.18) translateY(-40px);
+      }
+      55% {
+        opacity: 1;
+        transform: rotateX(-8deg) scaleY(1.03) translateY(0px);
+      }
+      80% {
+        transform: rotateX(4deg) scaleY(0.99);
+      }
+      100% {
+        opacity: 1;
+        transform: rotateX(0deg) scaleY(1);
+      }
+    }
+
+    .parchment-unroll {
+      transform-origin: top center;
+      animation: scrollUnfurl3D 0.95s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      background: linear-gradient(180deg, #f3e5c8 0%, #ead3a8 50%, #dfbe86 100%);
+      box-shadow:
+        0 25px 60px rgba(0, 0, 0, 0.75),
+        inset 0 0 38px rgba(139, 90, 43, 0.32);
+    }
+
+    .parchment-roller {
+      background: linear-gradient(180deg, #7c4a21 0%, #b06d36 35%, #5c3312 100%);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.55);
+    }
+
+    /* Avatar Idle Breathing & Celebration Animations */
+    @keyframes idleBreathe {
+      0%, 100% { transform: translateY(0px) scaleY(1); }
+      50% { transform: translateY(-3px) scaleY(1.012); }
+    }
+
+    @keyframes avatarJump {
+      0% { transform: translateY(0) scale(1); }
+      30% { transform: translateY(-24px) scale(1.04, 0.96); }
+      55% { transform: translateY(0) scale(0.96, 1.03); }
+      75% { transform: translateY(-10px) scale(1.02); }
+      100% { transform: translateY(0) scale(1); }
+    }
+
+    @keyframes floatCoin {
+      0% { opacity: 1; transform: translateY(0) scale(0.9); }
+      100% { opacity: 0; transform: translateY(-55px) scale(1.2); }
+    }
+
+    @keyframes fireplaceFlicker {
+      0%, 100% { transform: scale(1) skewX(0deg); opacity: 0.95; }
+      25% { transform: scale(1.06, 0.95) skewX(2deg); opacity: 1; }
+      50% { transform: scale(0.96, 1.08) skewX(-2deg); opacity: 0.85; }
+      75% { transform: scale(1.04, 0.98) skewX(1deg); opacity: 0.95; }
+    }
+
+    @keyframes neonPulse {
+      0%, 100% { filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.85)); }
+      50% { filter: drop-shadow(0 0 14px rgba(56, 189, 248, 1)); }
+    }
+
+    @keyframes scanLine {
+      0% { top: 0%; }
+      50% { top: 92%; }
+      100% { top: 0%; }
+    }
+
+    .scanner-bar {
+      animation: scanLine 1.4s ease-in-out infinite;
+    }
+
+    .avatar-breathe {
+      animation: idleBreathe 3.2s ease-in-out infinite;
+      transform-origin: bottom center;
+    }
+
+    .avatar-celebrate {
+      animation: avatarJump 0.75s cubic-bezier(0.34, 1.56, 0.64, 1);
+      transform-origin: bottom center;
+    }
+
+    .flame-anim {
+      animation: fireplaceFlicker 1.4s ease-in-out infinite;
+      transform-origin: bottom center;
+    }
+
+    .neon-glow {
+      animation: neonPulse 2.6s ease-in-out infinite;
+    }
+
+    .floating-reward {
+      animation: floatCoin 1.2s ease-out forwards;
+      pointer-events: none;
+    }
+
+    #avatar-mover { transition: transform 1s cubic-bezier(.45,.05,.3,1); }
+    #avatar-pose { transition: transform .4s; transform-origin: 90px 266px; }
+    #avatar-pose.pose-type { transform: translateY(5px) rotate(4deg); }
+    #avatar-pose.pose-look { transform: rotate(-5deg); }
+    @keyframes avatarWalk { 0%,100%{transform:rotate(-3deg) translateY(0)} 25%{transform:rotate(0) translateY(-5px)} 50%{transform:rotate(3deg) translateY(0)} 75%{transform:rotate(0) translateY(-5px)} }
+    .avatar-walk { animation: avatarWalk .5s linear infinite; transform-box: fill-box; transform-origin: bottom center; }
+    @keyframes typeL { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-3px)} }
+    .pose-type #pose-hands .hand-l { animation: typeL .2s infinite; }
+    .pose-type #pose-hands .hand-r { animation: typeL .26s infinite .08s; }
+    .furniture-hit { cursor: pointer; }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0b101d;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1e2c4c;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #38bdf8;
+    }
+
+    /* Signature Canvas Touch Prevention */
+    #signature-pad {
+      touch-action: none;
+      cursor: crosshair;
+    }

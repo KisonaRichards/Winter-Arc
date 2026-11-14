@@ -1,0 +1,77 @@
+/* Share & boost modal */
+    // -----------------------------------------------------------------------
+    // 12. NAVIGATION, MODALS & NOTIFICATIONS
+    // -----------------------------------------------------------------------
+    function openShareBoostModal() {
+      document.getElementById('invite-link-text').textContent = `https://winterarc.gg/lockin?ref=${encodeURIComponent(gameState.player.name || 'athlete')}`;
+      renderShareBoostUI();
+      document.getElementById('share-boost-modal').classList.remove('hidden');
+    }
+
+    function closeShareBoostModal() {
+      document.getElementById('share-boost-modal').classList.add('hidden');
+    }
+
+    function copyInviteLink() {
+      const linkText = document.getElementById('invite-link-text').textContent;
+      const tempInput = document.createElement('input');
+      tempInput.value = linkText;
+      document.body.appendChild(tempInput);
+      tempInput.select();
+      document.execCommand('copy');
+      document.body.removeChild(tempInput);
+      SoundFX.pop();
+      showToast('Invite link copied to clipboard!', 'info');
+    }
+
+    function renderShareBoostUI() {
+      const count = gameState.shareFriendsCount || 0;
+      document.getElementById('share-modal-progress').textContent = `${count} / 3`;
+
+      const slotsGrid = document.getElementById('share-slots-grid');
+      slotsGrid.innerHTML = [1, 2, 3].map(idx => {
+        const done = count >= idx;
+        return `
+          <div class="p-3 rounded-2xl border text-center transition-all ${done ? 'bg-emerald-500/15 border-emerald-400/50 text-emerald-300' : 'bg-obsidian-950 border-slate-800 text-slate-500'}">
+            <i class="fa-solid ${done ? 'fa-circle-check text-emerald-400' : 'fa-user-clock'} text-lg mb-1"></i>
+            <p class="text-[11px] font-bold">Friend ${idx}</p>
+          </div>
+        `;
+      }).join('');
+
+      const btn = document.getElementById('claim-share-reward-btn');
+      if (gameState.shareRewardClaimed) {
+        btn.disabled = true;
+        btn.className = 'w-full py-3.5 rounded-xl bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 font-bold text-sm flex items-center justify-center gap-2';
+        btn.innerHTML = '<i class="fa-solid fa-check-double"></i> +150 XP & +120 Coins Claimed!';
+      } else if (count < 3) {
+        btn.disabled = false;
+        btn.className = 'w-full py-3.5 rounded-xl bg-gradient-to-r from-ice-500 to-blue-600 hover:from-ice-400 hover:to-blue-500 text-white font-extrabold text-sm shadow-lg transition-all flex items-center justify-center gap-2';
+        btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Share Invite to Friend #${count + 1} (${count}/3)`;
+      } else {
+        btn.disabled = false;
+        btn.className = 'w-full py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-obsidian-950 font-extrabold text-sm shadow-lg animate-pulse transition-all flex items-center justify-center gap-2';
+        btn.innerHTML = '<i class="fa-solid fa-gift"></i> Claim +150 XP & +120 Coins!';
+      }
+    }
+
+    function claimShareBoostReward() {
+      if (gameState.shareRewardClaimed) return;
+
+      if (gameState.shareFriendsCount < 3) {
+        copyInviteLink();
+        gameState.shareFriendsCount += 1;
+        SoundFX.pop();
+        saveState();
+        renderShareBoostUI();
+        renderGameHub();
+        showToast(`Invite #${gameState.shareFriendsCount} sent! (${gameState.shareFriendsCount}/3)`, 'info');
+      } else {
+        gameState.shareRewardClaimed = true;
+        closeShareBoostModal();
+        interactWithAvatar();
+        awardXPAndCoins(150, 120);
+        showToast('Starter Share Boost unlocked! Hit the Shop to upgrade your fit!', 'success');
+      }
+    }
+
