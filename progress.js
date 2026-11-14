@@ -132,12 +132,13 @@
         date: getCurrentGameDateFormatted(),
         mood: selectedMoodOption.label,
         emoji: selectedMoodOption.emoji,
-        note
+        note,
+        dateKey: getCurrentGameDateKey()
       });
       lineInput.value = '';
       saveState();
       renderMoodTracker();
-      awardXPAndCoins(10, 10);
+      awardXPAndCoins(10, 10, { source: 'mood-log' });
       showToast('Daily mood & reflection saved! +10 Coins', 'success');
     }
 
@@ -216,7 +217,7 @@
       });
 
       document.getElementById('track-note-input').value = '';
-      awardXPAndCoins(50, 30);
+      awardXPAndCoins(50, 30, { source: 'weekly-log' });
       showToast('Weekly log recorded! Next check-in unlocks in 7 days.', 'success');
     }
 
@@ -275,4 +276,3 @@
       spawnFloatingReward('+500 DEMO COINS');
       showToast('Demo Boost: +500 Winter Coins added! Check out the Shop.', 'success');
     }
-
