@@ -70,8 +70,7 @@
         gameState.shareRewardClaimed = true;
         closeShareBoostModal();
         interactWithAvatar();
-        awardXPAndCoins(150, 120);
+        awardXPAndCoins(150, 120, { source: 'share-boost', txId: 'share-boost' });
         showToast('Starter Share Boost unlocked! Hit the Shop to upgrade your fit!', 'success');
       }
     }
-
