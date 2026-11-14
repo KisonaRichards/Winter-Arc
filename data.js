@@ -63,7 +63,7 @@
     const DEMO_MODE = true;
     // Slow-burn rewards so players can't max everything out in a few days
     const REWARD_XP_PER_PROOF = 10, REWARD_COINS_PER_PROOF = 10;
-    const ALL_DONE_BONUS_XP = 10, ALL_DONE_BONUS_COINS = 10;
+    const ALL_DONE_BONUS_XP = 60, ALL_DONE_BONUS_COINS = 10;
 
     const SHOP_FLOOR_COLORS = [
       { id: 'slate', name: 'Starter Slate Floor', desc: 'Default cold studio flooring.', price: 0, top: '#23293a', bottom: '#151924', line: '#1b2130' },
@@ -104,4 +104,3 @@
       "Future you is watching. Make them proud! 🔥",
       "Snap real proof and claim your XP!"
     ];
-
