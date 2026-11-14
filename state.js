@@ -1,4 +1,4 @@
-/* Application state & persistence (save/load) */
+/* Application state & persistence (save/l/* Application state & persistence (save/load) */
     // -----------------------------------------------------------------------
     // 3. APPLICATION STATE & PERSISTENCE
     // -----------------------------------------------------------------------
@@ -91,4 +91,3 @@
         console.error('Failed to load saved state:', e);
       }
     }
-
