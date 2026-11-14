@@ -9,10 +9,12 @@
       const rankIdx = Math.min(gameState.level - 1, RANK_TITLES.length - 1);
       document.getElementById('hud-rank-title').textContent = RANK_TITLES[rankIdx];
 
-      const xpNeeded = gameState.level * 100;
-      const xpPct = Math.min(100, Math.round((gameState.xp / xpNeeded) * 100));
-      document.getElementById('hud-xp-bar').style.width = `${xpPct}%`;
-      document.getElementById('hud-xp-text').textContent = `${gameState.xp} / ${xpNeeded} XP`;
+      const prog = getLevelProgress(gameState.totalXP);
+      document.getElementById('hud-xp-bar').style.width = `${prog.percent}%`;
+      document.getElementById('hud-xp-text').textContent = prog.isMax
+        ? 'MAX LEVEL'
+        : `${prog.xpIntoLevel.toLocaleString()} / ${prog.xpForLevel.toLocaleString()} XP`;
+      document.getElementById('hud-xp-text').title = prog.isMax ? '' : `${prog.xpToNext.toLocaleString()} XP to Level ${prog.level + 1}`;
 
       document.getElementById('hud-streak').textContent = `${gameState.streak}d`;
       document.getElementById('hud-coins').textContent = gameState.coins;
@@ -122,29 +124,39 @@
       setTimeout(() => badge.remove(), 1250);
     }
 
-    function awardXPAndCoins(xpAmount, coinAmount) {
-      gameState.xp += xpAmount;
-      gameState.coins += coinAmount;
+    // The one place XP and coins are granted.
+    // opts.source: where it came from (quest, daily-bonus, ...). opts.txId: unique id that makes
+    // the reward claimable only once (double-clicks, refreshes, re-submits all become no-ops).
+    function awardXPAndCoins(xpAmount, coinAmount, opts = {}) {
+      const xp = sanitizeXP(xpAmount);
+      const coins = Math.max(0, Math.floor(Number(coinAmount)) || 0);
+      const { source = 'misc', txId = null } = opts;
+      if (txId && gameState.rewardLog.some(r => r.txId === txId)) return false;
 
-      let xpNeeded = gameState.level * 100;
-      let leveledUp = false;
-      while (gameState.xp >= xpNeeded) {
-        gameState.xp -= xpNeeded;
-        gameState.level += 1;
-        xpNeeded = gameState.level * 100;
-        leveledUp = true;
-      }
+      const levelBefore = gameState.level;
+      gameState.totalXP += xp;
+      gameState.coins += coins;
+      syncDerivedProgress(gameState);
+      gameState.rewardLog.push({
+        id: 'rw_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+        txId, source, dateKey: getCurrentGameDateKey(), ts: Date.now(), xp, coins
+      });
 
-      if (leveledUp) {
+      const leveledUp = gameState.level > levelBefore; // handles multi-level jumps
+
+      if (opts.silent) {
+        if (!leveledUp) SoundFX.coin(); // the celebration card handles all other feedback
+      } else if (leveledUp) {
         SoundFX.levelUp();
-        showToast(`LEVEL UP! You reached Level ${gameState.level}!`, 'success');
+        const jump = gameState.level - levelBefore > 1 ? `Level ${levelBefore} → ${gameState.level}` : `Level ${gameState.level}`;
+        showToast(`LEVEL UP! You reached ${jump}!`, 'success');
         triggerAvatarSpeech(`LEVEL ${gameState.level} UNLOCKED! Unstoppable! 🚀`);
       } else {
         SoundFX.coin();
       }
 
-      spawnFloatingReward(`+${coinAmount} Coins • +${xpAmount} XP`);
+      if (!opts.silent) spawnFloatingReward(`+${coins} Coins • +${xp} XP`);
       saveState();
       renderGameHub();
+      return true;
     }
-
