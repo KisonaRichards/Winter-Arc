@@ -1,6 +1,8 @@
 /* Reward, proof-type and level-unlock configuration. Edit numbers here only. */
 const XP_REWARDS = { easy: 10, medium: 25, hard: 35, dayCleared: 30, weeklyReview: 50, milestone: 250,
   dailyReflection: 10, weeklyLog: 25, shareBoost: 100 };
+// Coin payouts (lowered so coins and levels run out together)
+const COIN_REWARDS = { quest: 6, dayCleared: 6, dailyReflection: 6, weeklyLog: 20, weeklyReview: 60, shareBoost: 120 };
 const DIFFICULTIES = { easy: 'Easy', medium: 'Medium', hard: 'Hard' };
 const PROOF_TYPES = {
   photo:    { label: 'Photo',    icon: '📷', desc: 'Upload an image as proof that you completed the task.' },
@@ -13,8 +15,8 @@ const MILESTONE_LEVELS = [5, 10, 15, 20, 25, 30];
 
 // Level required to buy each item (unlockType "level"). Anything not listed = level 1.
 const ITEM_LEVELS = {
-  outfit: { gymset: 3, hoodie: 10, streetwear: 20, luxury: 30 },
-  room:   { rug: 1, plant: 3, couch: 5, painting: 8, neon: 12, bookshelf: 16, desk: 20, window: 23, fireplace: 25 },
+  outfit: { gymset: 3, hoodie: 10, frostdress: 14, pinkset: 18, streetwear: 20, puffer: 28, luxury: 30 },
+  room:   { rug: 1, plant: 3, couch: 5, painting: 8, neon: 12, bookshelf: 16, desk: 20, window: 23, fireplace: 25, fairylights: 9, aquarium: 22 },
   wall:   { midnight: 1, sage: 6, terracotta: 11, cream: 15, pink: 19, black: 27 },
   floor:  { oak: 3, birch: 12, stone: 13, blush: 18, onyx: 24 }
 };
