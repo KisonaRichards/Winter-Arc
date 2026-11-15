@@ -64,7 +64,7 @@
       if (gameState.shareRewardClaimed) {
         btn.disabled = true;
         btn.className = 'w-full py-3.5 rounded-xl bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 font-bold text-sm flex items-center justify-center gap-2';
-        btn.innerHTML = '<i class="fa-solid fa-check-double"></i> +150 XP & +120 Coins Claimed!';
+        btn.innerHTML = '<i class="fa-solid fa-check-double"></i> +' + XP_REWARDS.shareBoost + ' XP & +120 Coins Claimed!';
       } else if (count < 3) {
         btn.disabled = false;
         btn.className = 'w-full py-3.5 rounded-xl bg-gradient-to-r from-ice-500 to-blue-600 hover:from-ice-400 hover:to-blue-500 text-white font-extrabold text-sm shadow-lg transition-all flex items-center justify-center gap-2';
@@ -72,7 +72,7 @@
       } else {
         btn.disabled = false;
         btn.className = 'w-full py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-obsidian-950 font-extrabold text-sm shadow-lg animate-pulse transition-all flex items-center justify-center gap-2';
-        btn.innerHTML = '<i class="fa-solid fa-gift"></i> Claim +150 XP & +120 Coins!';
+        btn.innerHTML = '<i class="fa-solid fa-gift"></i> Claim +' + XP_REWARDS.shareBoost + ' XP & +120 Coins!';
       }
     }
 
@@ -107,7 +107,7 @@
         gameState.shareRewardClaimed = true;
         closeShareBoostModal();
         interactWithAvatar();
-        awardXPAndCoins(150, 120, { source: 'share-boost', txId: 'share-boost' });
+        awardXPAndCoins(XP_REWARDS.shareBoost, COIN_REWARDS.shareBoost, { source: 'share-boost', txId: 'share-boost' });
         showToast('Starter Share Boost unlocked! Hit the Shop to upgrade your fit!', 'success');
       }
     }
