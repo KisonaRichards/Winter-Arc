@@ -12,6 +12,7 @@
       },
       playTone(freq, type = 'sine', duration = 0.15, delay = 0, vol = 0.12) {
         try {
+          if (typeof gameState !== 'undefined' && gameState.soundEnabled === false) return; // sound toggle
           this.init();
           if (!this.ctx) return;
           const osc = this.ctx.createOscillator();
