@@ -4,6 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>WINTER ARC // Lock-In Life RPG</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <meta name="theme-color" content="#0b1220" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Winter Arc" />
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Google Fonts: Inter, Space Grotesk & Cinzel (for 3D Parchment Decree) -->
@@ -432,6 +438,9 @@
         </div>
       </div>
     </header>
+
+    <!-- In-game alerts -->
+    <div id="alert-banner"></div>
 
     <!-- MAIN CONTENT GRID: Left/Center = Interactive Room Stage | Right = Action Panel -->
     <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
@@ -1103,6 +1112,8 @@
   <script src="progress.js"></script>
   <script src="navigation.js"></script>
   <script src="streak.js"></script>
+  <script src="alerts.js"></script>
+  <script src="pwa.js"></script>
   <script src="quests.js"></script>
   <script src="celebration.js"></script>
   <script src="level-gates.js"></script>
