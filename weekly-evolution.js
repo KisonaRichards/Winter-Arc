@@ -65,9 +65,9 @@ function submitWeeklyReport(n) {
   REFLECT_FIELDS.forEach(([k]) => reflection[k] = document.getElementById('wk-' + k).value.trim().slice(0, 500));
   const prevLevel = gameState.level, prevXP = gameState.totalXP, prevCoins = gameState.coins;
   gameState.weeklyReports.push({ weekId: 'W' + String(n).padStart(2, '0'), week: n, startDate: start, endDate: end, stats, reflection, title: weekTitle(n, stats.questCompletion), completedAt: Date.now() });
-  awardXPAndCoins(XP_REWARDS.weeklyReview, 100, { source: 'weekly-review', txId: 'weekly-review:' + n, silent: true });
+  awardXPAndCoins(XP_REWARDS.weeklyReview, COIN_REWARDS.weeklyReview, { source: 'weekly-review', txId: 'weekly-review:' + n, silent: true });
   saveState(); closeQuestModal(); renderEvolution(); renderGameHub();
-  celebrate({ questName: 'Weekly review complete', xp: XP_REWARDS.weeklyReview, coins: 100, prevXP, newXP: gameState.totalXP, prevCoins, newCoins: gameState.coins,
+  celebrate({ questName: 'Weekly review complete', xp: XP_REWARDS.weeklyReview, coins: COIN_REWARDS.weeklyReview, prevXP, newXP: gameState.totalXP, prevCoins, newCoins: gameState.coins,
     streak: 0, isFirstEver: false, isFirstToday: false, doneToday: 0, totalToday: 0, dayCleared: false, levelFrom: prevLevel, levelTo: gameState.level });
 }
 
