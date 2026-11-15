@@ -64,3 +64,23 @@
       }, 3000);
     }
 
+
+    // Sound on/off (saved with the game; the icon follows the saved setting)
+    function updateSoundIcon() {
+      const btn = document.getElementById('sound-toggle-btn');
+      if (!btn) return;
+      const on = gameState.soundEnabled !== false;
+      btn.innerHTML = `<i class="fa-solid ${on ? 'fa-volume-high' : 'fa-volume-xmark text-slate-500'} text-sm"></i>`;
+      btn.setAttribute('aria-pressed', String(!on));
+    }
+    function toggleSound() {
+      gameState.soundEnabled = gameState.soundEnabled === false;
+      saveState();
+      updateSoundIcon();
+      if (gameState.soundEnabled) SoundFX.pop();
+      showToast(gameState.soundEnabled ? 'Sound on' : 'Sound off', 'info');
+    }
+    (function () {
+      const base = window.renderGameHub;
+      window.renderGameHub = function () { base.apply(this, arguments); updateSoundIcon(); };
+    })();
