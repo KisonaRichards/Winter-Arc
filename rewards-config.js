@@ -1,8 +1,12 @@
 /* Reward, proof-type and level-unlock configuration. Edit numbers here only. */
 const XP_REWARDS = { easy: 10, medium: 25, hard: 35, dayCleared: 30, weeklyReview: 50, milestone: 250,
-  dailyReflection: 10, weeklyLog: 25, shareBoost: 100 };
+  comeback: 200, dailyReflection: 10, weeklyLog: 25, shareBoost: 100 };
 // Coin payouts (lowered so coins and levels run out together)
 const COIN_REWARDS = { quest: 6, dayCleared: 6, dailyReflection: 6, weeklyLog: 20, weeklyReview: 60, shareBoost: 120 };
+// Streak protection & comeback rules
+const SHIELD_EVERY = 7, SHIELD_MAX = 3;          // +1 Winter Shield at every 7-day streak (holds up to 3)
+const COMEBACK_AFTER_DAYS = 7, COMEBACK_COOLDOWN_DAYS = 30;
+const ALERT_EVENING_HOUR = 18;                   // "streak at risk" alerts start at 6pm
 const DIFFICULTIES = { easy: 'Easy', medium: 'Medium', hard: 'Hard' };
 const PROOF_TYPES = {
   photo:    { label: 'Photo',    icon: '📷', desc: 'Upload an image as proof that you completed the task.' },
