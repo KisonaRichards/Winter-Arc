@@ -1,5 +1,6 @@
 /* Reward, proof-type and level-unlock configuration. Edit numbers here only. */
-const XP_REWARDS = { easy: 40, medium: 65, hard: 100, dayCleared: 60, weeklyReview: 100, milestone: 250 };
+const XP_REWARDS = { easy: 10, medium: 25, hard: 35, dayCleared: 30, weeklyReview: 50, milestone: 250,
+  dailyReflection: 10, weeklyLog: 25, shareBoost: 100 };
 const DIFFICULTIES = { easy: 'Easy', medium: 'Medium', hard: 'Hard' };
 const PROOF_TYPES = {
   photo:    { label: 'Photo',    icon: '📷', desc: 'Upload an image as proof that you completed the task.' },
@@ -12,10 +13,10 @@ const MILESTONE_LEVELS = [5, 10, 15, 20, 25, 30];
 
 // Level required to buy each item (unlockType "level"). Anything not listed = level 1.
 const ITEM_LEVELS = {
-  outfit: { gymset: 2, hoodie: 5, streetwear: 10, luxury: 20 },
-  room:   { rug: 1, plant: 2, painting: 3, couch: 5, neon: 7, bookshelf: 10, window: 12, desk: 15, fireplace: 20 },
-  wall:   { midnight: 1, sage: 3, terracotta: 3, cream: 5, pink: 7, black: 10 },
-  floor:  { oak: 2, birch: 4, stone: 6, blush: 8, onyx: 12 }
+  outfit: { gymset: 3, hoodie: 10, streetwear: 20, luxury: 30 },
+  room:   { rug: 1, plant: 3, couch: 5, painting: 8, neon: 12, bookshelf: 16, desk: 20, window: 23, fireplace: 25 },
+  wall:   { midnight: 1, sage: 6, terracotta: 11, cream: 15, pink: 19, black: 27 },
+  floor:  { oak: 3, birch: 12, stone: 13, blush: 18, onyx: 24 }
 };
 const ITEM_SOURCES = () => ({ outfit: SHOP_OUTFITS, room: SHOP_ROOM_ITEMS, wall: SHOP_WALL_COLORS, floor: SHOP_FLOOR_COLORS });
 const SHOP_TAB_FOR = { outfit: 'outfits', room: 'room', wall: 'walls', floor: 'floors' };
