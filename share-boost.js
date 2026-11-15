@@ -1,113 +1,1092 @@
-/* Share & boost modal */
-    // -----------------------------------------------------------------------
-    // 12. NAVIGATION, MODALS & NOTIFICATIONS
-    // -----------------------------------------------------------------------
-    function openShareBoostModal() {
-      document.getElementById('invite-link-text').textContent = `${location.href.split(/[?#]/)[0]}?ref=${encodeURIComponent(gameState.player.name || 'athlete')}`;
-      renderShareBoostUI();
-      document.getElementById('share-boost-modal').classList.remove('hidden');
-    }
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WINTER ARC // Lock-In Life RPG</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter, Space Grotesk & Cinzel (for 3D Parchment Decree) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+  <!-- FontAwesome for crisp game icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 
-    function closeShareBoostModal() {
-      document.getElementById('share-boost-modal').classList.add('hidden');
-    }
-
-    // Copies the invite link (modern clipboard API, with a fallback for older browsers).
-    async function copyInviteLink() {
-      const linkText = document.getElementById('invite-link-text').textContent;
-      try {
-        await navigator.clipboard.writeText(linkText);
-      } catch (e) {
-        const tempInput = document.createElement('input');
-        tempInput.value = linkText;
-        document.body.appendChild(tempInput);
-        tempInput.select();
-        document.execCommand('copy');
-        document.body.removeChild(tempInput);
-      }
-      SoundFX.pop();
-      return true;
-    }
-
-    // Opens the device's native share sheet (Messages, WhatsApp, Instagram, etc.).
-    // Returns 'shared', 'copied' (no share sheet available) or 'cancelled'.
-    async function shareInvite() {
-      const url = document.getElementById('invite-link-text').textContent;
-      if (navigator.share) {
-        try {
-          await navigator.share({ title: 'Winter Arc', text: "I'm locking in this winter with Winter Arc. Join me:", url });
-          return 'shared';
-        } catch (e) {
-          if (e && e.name === 'AbortError') return 'cancelled'; // user closed the share box
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Space Grotesk', 'sans-serif'],
+            serif: ['Cinzel', 'serif'],
+          },
+          colors: {
+            ice: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              200: '#bae6fd',
+              300: '#7dd3fc',
+              400: '#38bdf8',
+              500: '#0ea5e9',
+              600: '#0284c7',
+              900: '#0c4a6e',
+              950: '#082f49',
+            },
+            obsidian: {
+              950: '#060911',
+              900: '#0b101d',
+              850: '#101729',
+              800: '#162038',
+              700: '#1e2c4c',
+            }
+          }
         }
       }
-      await copyInviteLink();
-      return 'copied';
     }
+  </script>
 
-    function renderShareBoostUI() {
-      const count = gameState.shareFriendsCount || 0;
-      document.getElementById('share-modal-progress').textContent = `${count} / 3`;
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="min-h-screen bg-obsidian-950 text-slate-100 font-sans antialiased selection:bg-ice-500 selection:text-white">
 
-      const slotsGrid = document.getElementById('share-slots-grid');
-      slotsGrid.innerHTML = [1, 2, 3].map(idx => {
-        const done = count >= idx;
-        return `
-          <div class="p-3 rounded-2xl border text-center transition-all ${done ? 'bg-emerald-500/15 border-emerald-400/50 text-emerald-300' : 'bg-obsidian-950 border-slate-800 text-slate-500'}">
-            <i class="fa-solid ${done ? 'fa-circle-check text-emerald-400' : 'fa-user-clock'} text-lg mb-1"></i>
-            <p class="text-[11px] font-bold">Friend ${idx}</p>
+  <!-- Ambient Winter Background Glows -->
+  <div class="fixed inset-0 pointer-events-none overflow-hidden z-0">
+    <div class="absolute -top-32 -left-32 w-96 h-96 bg-ice-500/10 rounded-full blur-3xl"></div>
+    <div class="absolute top-1/3 -right-32 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl"></div>
+    <div class="absolute bottom-0 left-1/4 w-[32rem] h-64 bg-cyan-500/5 rounded-full blur-3xl"></div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col gap-2 pointer-events-none max-w-xs w-full"></div>
+
+  <!-- ===================================================================== -->
+  <!-- VIEW 1: ONBOARDING & CHARACTER CREATION WIZARD                        -->
+  <!-- ===================================================================== -->
+  <div id="onboarding-screen" class="relative z-10 min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 hidden">
+    <div class="w-full max-w-4xl frost-panel rounded-3xl overflow-hidden border border-ice-400/20 shadow-2xl">
+      <!-- Wizard Header -->
+      <div class="bg-obsidian-900/90 px-6 py-5 border-b border-ice-400/15 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-ice-400 to-blue-600 flex items-center justify-center text-obsidian-950 font-bold text-lg shadow-lg shadow-ice-500/25">
+            <i class="fa-solid fa-snowflake"></i>
           </div>
-        `;
-      }).join('');
+          <div>
+            <h1 class="font-display font-bold text-xl tracking-tight text-white">WINTER ARC <span class="text-ice-400">// INITIATION</span></h1>
+            <p class="text-xs text-slate-400">Clean slate. Bare room. Lock in and build your empire.</p>
+          </div>
+        </div>
+        <!-- Step Indicators -->
+        <div class="flex items-center gap-2" id="wizard-steps-indicator">
+          <span class="step-dot w-8 h-2 rounded-full bg-ice-400 transition-all"></span>
+          <span class="step-dot w-8 h-2 rounded-full bg-obsidian-700 transition-all"></span>
+          <span class="step-dot w-8 h-2 rounded-full bg-obsidian-700 transition-all"></span>
+          <span class="step-dot w-8 h-2 rounded-full bg-obsidian-700 transition-all"></span>
+        </div>
+      </div>
 
-      const btn = document.getElementById('claim-share-reward-btn');
-      if (gameState.shareRewardClaimed) {
-        btn.disabled = true;
-        btn.className = 'w-full py-3.5 rounded-xl bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 font-bold text-sm flex items-center justify-center gap-2';
-        btn.innerHTML = '<i class="fa-solid fa-check-double"></i> +150 XP & +120 Coins Claimed!';
-      } else if (count < 3) {
-        btn.disabled = false;
-        btn.className = 'w-full py-3.5 rounded-xl bg-gradient-to-r from-ice-500 to-blue-600 hover:from-ice-400 hover:to-blue-500 text-white font-extrabold text-sm shadow-lg transition-all flex items-center justify-center gap-2';
-        btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Share Invite to Friend #${count + 1} (${count}/3)`;
-      } else {
-        btn.disabled = false;
-        btn.className = 'w-full py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-obsidian-950 font-extrabold text-sm shadow-lg animate-pulse transition-all flex items-center justify-center gap-2';
-        btn.innerHTML = '<i class="fa-solid fa-gift"></i> Claim +150 XP & +120 Coins!';
-      }
-    }
+      <!-- STEP 1: Avatar & Baseline Stats -->
+      <div id="wizard-step-1" class="p-6 sm:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+        <!-- Live Avatar Preview in Clean Slate Gown -->
+        <div class="lg:col-span-5 flex flex-col items-center">
+          <div class="relative w-full max-w-[260px] aspect-[4/5] rounded-3xl bg-gradient-to-b from-slate-800/80 to-slate-900 border border-slate-700/70 flex flex-col items-center justify-end overflow-hidden p-4 shadow-inner">
+            <span class="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-slate-950/75 text-[11px] font-semibold text-ice-300 border border-ice-400/20">
+              LVL 1 • CLEAN SLATE
+            </span>
+            <div id="onboarding-avatar-preview" class="w-44 h-60 avatar-breathe"></div>
+            <div class="w-full text-center mt-2 pt-2 border-t border-slate-700/50">
+              <p class="text-[11px] text-slate-400 uppercase tracking-wider font-semibold">Starter Gear: Basic White Gown</p>
+            </div>
+          </div>
+        </div>
 
-    let shareInFlight = false; // blocks double-taps while the share sheet is open
+        <!-- Character Customization Form -->
+        <div class="lg:col-span-7 space-y-5">
+          <div>
+            <h2 class="font-display text-2xl font-bold text-white">1. Create Your Vessel</h2>
+            <p class="text-sm text-slate-400 mt-1">Everyone starts at zero in an empty room. Customize your look and log your baseline stats.</p>
+          </div>
 
-    async function claimShareBoostReward() {
-      if (gameState.shareRewardClaimed || shareInFlight) return;
+          <div class="grid grid-cols-1 sm:grid-cols-12 gap-3.5 items-start">
+            <!-- Code Name Input + Inline Red Error Edge Case -->
+            <div class="sm:col-span-4">
+              <label class="block text-xs font-semibold text-slate-300 mb-1.5">Code Name</label>
+              <input id="input-name" type="text" placeholder="e.g. Alex01" maxlength="18" oninput="validateStep1Inputs()" class="w-full px-3.5 py-2.5 rounded-xl bg-obsidian-950/90 border border-slate-700 focus:border-ice-400 focus:outline-none text-sm text-white transition-colors" />
+              <p id="error-name" class="text-[11px] font-semibold text-rose-400 mt-1 hidden"></p>
+            </div>
 
-      if (gameState.shareFriendsCount < 3) {
-        shareInFlight = true;
-        let result;
-        try {
-          result = await shareInvite();
-        } finally {
-          shareInFlight = false;
-        }
+            <!-- Height Input + cm / ft-in Toggle -->
+            <div class="sm:col-span-4">
+              <div class="flex items-center justify-between mb-1.5">
+                <label class="text-xs font-semibold text-slate-300">Height</label>
+                <div class="inline-flex rounded-lg bg-obsidian-950 p-0.5 border border-slate-700">
+                  <button type="button" id="toggle-height-ft" onclick="setHeightUnit('ft')" class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-ice-500 text-obsidian-950 transition-all">ft/in</button>
+                  <button type="button" id="toggle-height-cm" onclick="setHeightUnit('cm')" class="px-2 py-0.5 rounded-md text-[10px] font-bold text-slate-400 hover:text-white transition-all">cm</button>
+                </div>
+              </div>
+              <!-- Dual ft / in inputs -->
+              <div id="height-ft-group" class="grid grid-cols-2 gap-1.5">
+                <div class="relative">
+                  <input id="input-height-ft" type="text" inputmode="numeric" placeholder="5" maxlength="1" oninput="validateStep1Inputs()" class="w-full pl-3 pr-7 py-2.5 rounded-xl bg-obsidian-950/90 border border-slate-700 focus:border-ice-400 focus:outline-none text-sm text-white" />
+                  <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-[11px] font-bold text-slate-500">ft</span>
+                </div>
+                <div class="relative">
+                  <input id="input-height-in" type="text" inputmode="numeric" placeholder="10" maxlength="2" oninput="validateStep1Inputs()" class="w-full pl-3 pr-7 py-2.5 rounded-xl bg-obsidian-950/90 border border-slate-700 focus:border-ice-400 focus:outline-none text-sm text-white" />
+                  <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-[11px] font-bold text-slate-500">in</span>
+                </div>
+              </div>
+              <!-- Single cm input -->
+              <div id="height-cm-group" class="relative hidden">
+                <input id="input-height-cm" type="text" inputmode="numeric" placeholder="178" maxlength="3" oninput="validateStep1Inputs()" class="w-full pl-3.5 pr-9 py-2.5 rounded-xl bg-obsidian-950/90 border border-slate-700 focus:border-ice-400 focus:outline-none text-sm text-white" />
+                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-bold text-slate-500">cm</span>
+              </div>
+              <p id="error-height" class="text-[11px] font-semibold text-rose-400 mt-1 hidden"></p>
+            </div>
 
-        // Do not count it if the user dismissed the native share sheet
-        if (result === 'cancelled') {
-          showToast('Share cancelled.', 'info');
-          return;
-        }
-        gameState.shareFriendsCount = (gameState.shareFriendsCount || 0) + 1;
-        SoundFX.pop();
-        saveState();
-        renderShareBoostUI();
-        renderGameHub();
+            <!-- Weight Input + lbs / kg Toggle -->
+            <div class="sm:col-span-4">
+              <div class="flex items-center justify-between mb-1.5">
+                <label class="text-xs font-semibold text-slate-300">Weight</label>
+                <div class="inline-flex rounded-lg bg-obsidian-950 p-0.5 border border-slate-700">
+                  <button type="button" id="toggle-weight-lbs" onclick="setWeightUnit('lbs')" class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-ice-500 text-obsidian-950 transition-all">lbs</button>
+                  <button type="button" id="toggle-weight-kg" onclick="setWeightUnit('kg')" class="px-2 py-0.5 rounded-md text-[10px] font-bold text-slate-400 hover:text-white transition-all">kg</button>
+                </div>
+              </div>
+              <div class="relative">
+                <input id="input-weight" type="text" inputmode="decimal" placeholder="175" maxlength="6" oninput="validateStep1Inputs()" class="w-full pl-3.5 pr-10 py-2.5 rounded-xl bg-obsidian-950/90 border border-slate-700 focus:border-ice-400 focus:outline-none text-sm text-white" />
+                <span id="weight-unit-suffix" class="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-bold text-slate-500">lbs</span>
+              </div>
+              <p id="error-weight" class="text-[11px] font-semibold text-rose-400 mt-1 hidden"></p>
+            </div>
+          </div>
 
-        const actionLabel = result === 'shared' ? 'Invite shared' : 'Invite link copied';
-        showToast(`${actionLabel}! (${gameState.shareFriendsCount}/3)`, 'info');
-      } else {
-        gameState.shareRewardClaimed = true;
-        closeShareBoostModal();
-        interactWithAvatar();
-        awardXPAndCoins(150, 120, { source: 'share-boost', txId: 'share-boost' });
-        showToast('Starter Share Boost unlocked! Hit the Shop to upgrade your fit!', 'success');
-      }
-    }
+          <!-- Skin Tone Selector -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-2">Skin Tone</label>
+            <div id="skin-tone-options" class="flex flex-wrap gap-2.5"></div>
+          </div>
+
+          <!-- Hair Style Selector (Now includes Braids!) -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-2">Hairstyle</label>
+            <div id="hair-style-options" class="grid grid-cols-2 sm:grid-cols-5 gap-2"></div>
+          </div>
+
+          <!-- Hair Color Selector -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-2">Hair Color</label>
+            <div id="hair-color-options" class="flex flex-wrap gap-2.5"></div>
+          </div>
+
+          <div class="pt-2 flex justify-end">
+            <button onclick="goToWizardStep(2)" class="px-6 py-3 rounded-xl bg-gradient-to-r from-ice-500 to-blue-600 hover:from-ice-400 hover:to-blue-500 text-white font-semibold text-sm shadow-lg shadow-ice-500/25 transition-all flex items-center gap-2">
+              Choose Life Aspects <i class="fa-solid fa-arrow-right"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 2: 10 Life Aspects Selection -->
+      <div id="wizard-step-2" class="p-6 sm:p-8 hidden space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
+          <div>
+            <h2 class="font-display text-2xl font-bold text-white">2. Select Your Winter Arc Aspects</h2>
+            <p class="text-sm text-slate-400 mt-1">Pick <span class="text-ice-300 font-semibold">2 to 5 core areas</span> you are locking in on this season.</p>
+          </div>
+          <span id="aspect-count-badge" class="px-3 py-1 rounded-full bg-ice-500/15 text-ice-300 text-xs font-bold border border-ice-400/30 self-start">
+            0 / 5 Selected
+          </span>
+        </div>
+
+        <div id="aspects-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3"></div>
+
+        <div class="pt-4 flex items-center justify-between border-t border-slate-800">
+          <button onclick="goToWizardStep(1)" class="px-5 py-2.5 rounded-xl bg-obsidian-800 hover:bg-obsidian-700 text-slate-300 font-semibold text-sm transition-all">
+            <i class="fa-solid fa-arrow-left mr-1.5"></i> Back
+          </button>
+          <button onclick="goToWizardStep(3)" class="px-6 py-3 rounded-xl bg-gradient-to-r from-ice-500 to-blue-600 hover:from-ice-400 hover:to-blue-500 text-white font-semibold text-sm shadow-lg shadow-ice-500/25 transition-all flex items-center gap-2">
+            Set Daily Habits <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- STEP 3: Choose 3-5 Daily Actionable Habits & Target Goal -->
+      <div id="wizard-step-3" class="p-6 sm:p-8 hidden space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
+          <div>
+            <h2 class="font-display text-2xl font-bold text-white">3. Build Your Daily Non-Negotiables</h2>
+            <p class="text-sm text-slate-400 mt-1">Pick <span class="text-ice-300 font-semibold">3 to 5 daily habits</span> you will check in on with photo proof.</p>
+          </div>
+          <span id="habit-count-badge" class="px-3 py-1 rounded-full bg-ice-500/15 text-ice-300 text-xs font-bold border border-ice-400/30 self-start">
+            0 / 5 Habits Chosen
+          </span>
+        </div>
+
+        <!-- Curated Habit Suggestions based on Selected Aspects -->
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2.5">Recommended Actions For Your Aspects (Tap to Select)</label>
+          <div id="suggested-habits-list" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-56 overflow-y-auto pr-1"></div>
+        </div>
+
+        <!-- Custom Habit Input -->
+        <div class="bg-obsidian-950/70 p-4 rounded-2xl border border-slate-800 space-y-3">
+          <label class="block text-xs font-semibold text-slate-300">Or Add Your Own Custom Daily Habit</label>
+          <div class="flex gap-2">
+            <input id="custom-habit-input" type="text" placeholder="e.g. No sugar + 10k steps daily" maxlength="48" class="flex-1 px-3.5 py-2.5 rounded-xl bg-obsidian-900 border border-slate-700 focus:border-ice-400 focus:outline-none text-sm text-white" />
+            <button onclick="addCustomHabit()" type="button" class="px-4 py-2.5 rounded-xl bg-ice-500/20 hover:bg-ice-500/30 text-ice-300 border border-ice-400/30 font-semibold text-sm transition-all">
+              + Add
+            </button>
+          </div>
+          <div id="selected-habits-pills" class="flex flex-wrap gap-2 pt-1"></div>
+        </div>
+
+        <!-- Primary Winter Arc Target Goal -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">Your Ultimate Winter Arc Target Goal</label>
+          <input id="input-target-goal" type="text" placeholder="e.g. Drop 15 lbs, save $3,000, and clear my skin by March 1st" maxlength="80" class="w-full px-4 py-3 rounded-xl bg-obsidian-950/90 border border-slate-700 focus:border-ice-400 focus:outline-none text-sm text-white" />
+        </div>
+
+        <div class="pt-4 flex items-center justify-between border-t border-slate-800">
+          <button onclick="goToWizardStep(2)" class="px-5 py-2.5 rounded-xl bg-obsidian-800 hover:bg-obsidian-700 text-slate-300 font-semibold text-sm transition-all">
+            <i class="fa-solid fa-arrow-left mr-1.5"></i> Back
+          </button>
+          <button onclick="goToWizardStep(4)" class="px-6 py-3 rounded-xl bg-gradient-to-r from-ice-500 to-blue-600 hover:from-ice-400 hover:to-blue-500 text-white font-semibold text-sm shadow-lg shadow-ice-500/25 transition-all flex items-center gap-2">
+            Sign Winter Pact <i class="fa-solid fa-file-signature"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- STEP 4: Digital Signature Commitment Contract -->
+      <div id="wizard-step-4" class="p-6 sm:p-8 hidden space-y-6">
+        <div>
+          <h2 class="font-display text-2xl font-bold text-white">4. The Winter Arc Commitment Pact</h2>
+          <p class="text-sm text-slate-400 mt-1">Sign below to seal your commitment and enter your starter room.</p>
+        </div>
+
+        <div class="bg-gradient-to-b from-slate-900 to-obsidian-950 p-6 rounded-2xl border border-ice-400/30 shadow-inner space-y-4">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+            <span class="text-xs font-mono uppercase tracking-widest text-ice-400">OFFICIAL WINTER ARC CONTRACT</span>
+            <span id="contract-date" class="text-xs font-mono text-slate-400"></span>
+          </div>
+
+          <p class="text-sm sm:text-base leading-relaxed text-slate-200 italic">
+            "I, <span id="contract-name" class="font-bold text-ice-300 not-italic underline decoration-ice-500/50">Challenger</span>, agree to lock in and stick to these habits for the Winter Arc and beyond. No excuses—just daily proof, consistency, and leveling up my life."
+          </p>
+
+          <div id="contract-habits-summary" class="flex flex-wrap gap-2"></div>
+
+          <!-- Signature Pad -->
+          <div class="space-y-2 pt-2">
+            <div class="flex items-center justify-between">
+              <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Draw Your Signature Below</label>
+              <button type="button" onclick="clearSignature()" class="text-xs text-rose-400 hover:text-rose-300 font-semibold flex items-center gap-1">
+                <i class="fa-solid fa-eraser"></i> Clear
+              </button>
+            </div>
+            <div class="relative rounded-xl overflow-hidden border-2 border-dashed border-ice-400/40 bg-obsidian-900/90">
+              <canvas id="signature-pad" class="w-full h-36 block"></canvas>
+              <div id="signature-placeholder" class="absolute inset-0 flex items-center justify-center pointer-events-none text-slate-500 text-xs">
+                Sign here with mouse or finger...
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-2 flex items-center justify-between">
+          <button onclick="goToWizardStep(3)" class="px-5 py-2.5 rounded-xl bg-obsidian-800 hover:bg-obsidian-700 text-slate-300 font-semibold text-sm transition-all">
+            <i class="fa-solid fa-arrow-left mr-1.5"></i> Back
+          </button>
+          <button onclick="completeOnboarding()" class="px-7 py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-bold text-sm shadow-lg shadow-emerald-500/25 transition-all flex items-center gap-2">
+            <i class="fa-solid fa-scroll"></i> Seal Pact & Unroll Decree
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- VIEW 1.5: 3D ANIMATED WINTER ARC RULES PARCHMENT SCROLL MODAL         -->
+  <!-- ===================================================================== -->
+  <div id="scroll-decree-modal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden flex items-center justify-center p-4 scroll-perspective overflow-y-auto">
+    <div class="w-full max-w-lg my-auto">
+      <!-- Top Wooden Scroll Roller -->
+      <div class="h-5 w-[104%] -ml-[2%] rounded-full parchment-roller border border-amber-900/80 relative z-20 flex items-center justify-between px-2">
+        <span class="w-3 h-3 rounded-full bg-amber-300/80 shadow-inner"></span>
+        <span class="w-3 h-3 rounded-full bg-amber-300/80 shadow-inner"></span>
+      </div>
+
+      <!-- 3D Unrolling Parchment Body -->
+      <div class="parchment-unroll px-6 sm:px-9 py-7 text-stone-900 border-x-4 border-amber-900/30 relative z-10 space-y-5">
+        <div class="text-center border-b-2 border-amber-900/25 pb-4">
+          <span class="inline-block text-[10px] font-bold uppercase tracking-[0.25em] text-amber-900/80 mb-1">
+            Official Winter Arc Decree
+          </span>
+          <h2 class="font-serif font-extrabold text-2xl sm:text-3xl text-stone-950 tracking-wide">
+            WINTER ARC RULES
+          </h2>
+        </div>
+
+        <!-- Personalized Oath -->
+        <p class="font-serif text-sm sm:text-base leading-relaxed text-stone-900 font-semibold">
+          “I, <span id="decree-player-name" class="underline decoration-amber-800 decoration-2 font-extrabold text-amber-950">Challenger</span>, agree to lock in and stick to these habits for the Winter Arc and beyond. No excuses—just daily proof, consistency, and leveling up.”
+        </p>
+
+        <!-- Committed Rules List -->
+        <div class="bg-amber-950/10 rounded-2xl p-4 border border-amber-900/20 space-y-2.5">
+          <span class="block text-[11px] font-bold uppercase tracking-wider text-amber-950">
+            My Non-Negotiable Daily Laws:
+          </span>
+          <ul id="decree-rules-list" class="space-y-2 text-sm font-semibold text-stone-900"></ul>
+        </div>
+
+        <!-- Closing Oath & Wax Seal -->
+        <div class="pt-2 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-amber-900/25">
+          <p class="font-serif italic text-xs sm:text-sm text-amber-950 font-bold text-center sm:text-left">
+            “Onward movement toward progress. Every day logged is a promise kept.”
+          </p>
+          <!-- Red Wax Seal Emblem -->
+          <div class="w-14 h-14 rounded-full bg-gradient-to-br from-rose-700 to-red-950 border-4 border-rose-900/70 shadow-lg flex items-center justify-center text-amber-200 shrink-0 rotate-6">
+            <i class="fa-solid fa-snowflake text-xl"></i>
+          </div>
+        </div>
+
+        <button onclick="enterRoomFromScroll()" class="w-full py-3.5 rounded-xl bg-stone-900 hover:bg-stone-800 text-amber-100 font-display font-bold text-sm tracking-wide shadow-xl transition-all flex items-center justify-center gap-2">
+          Enter My Room <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </div>
+
+      <!-- Bottom Wooden Scroll Roller -->
+      <div class="h-5 w-[104%] -ml-[2%] rounded-full parchment-roller border border-amber-900/80 relative z-20 flex items-center justify-between px-2">
+        <span class="w-3 h-3 rounded-full bg-amber-300/80 shadow-inner"></span>
+        <span class="w-3 h-3 rounded-full bg-amber-300/80 shadow-inner"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- VIEW 2: MAIN GAME HUB (THE LIVING ROOM & AVATAR)                      -->
+  <!-- ===================================================================== -->
+  <div id="game-hub-screen" class="relative z-10 min-h-screen flex flex-col hidden">
+
+    <!-- TOP HUD BAR -->
+    <header class="sticky top-0 z-30 frost-panel border-b border-ice-400/15 px-4 py-3">
+      <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+        <!-- Brand & Player Level / XP -->
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-ice-400 to-blue-600 flex items-center justify-center text-obsidian-950 font-extrabold text-base shadow-md shadow-ice-500/20">
+            <span id="hud-level-badge">1</span>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span id="hud-player-name" class="font-display font-bold text-sm sm:text-base text-white">Player</span>
+              <span id="hud-rank-title" class="px-2 py-0.5 rounded-md bg-ice-500/15 text-ice-300 text-[10px] font-bold uppercase tracking-wider border border-ice-400/20">
+                Novice Sleeper
+              </span>
+            </div>
+            <!-- XP Progress Bar -->
+            <div class="flex items-center gap-2 mt-1">
+              <div class="w-28 sm:w-40 h-2 bg-obsidian-950 rounded-full overflow-hidden border border-slate-800">
+                <div id="hud-xp-bar" class="h-full bg-gradient-to-r from-ice-400 to-blue-500 transition-all duration-500" style="width: 0%"></div>
+              </div>
+              <span id="hud-xp-text" class="text-[11px] font-mono text-slate-400">0 / 100 XP</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right HUD Stats: Share Boost, Streak, Coins, Demo Boost, Reset -->
+        <div class="flex items-center gap-2 sm:gap-2.5">
+          <!-- Share With 3 Friends Starter Boost Button -->
+          <button id="hud-share-boost-btn" onclick="openShareBoostModal()" class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-indigo-500/25 to-ice-500/25 hover:from-indigo-500/35 hover:to-ice-500/35 border border-ice-400/40 text-ice-200 text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm">
+            <i class="fa-solid fa-user-plus text-ice-400"></i>
+            <span class="hidden sm:inline">Share Boost</span>
+            <span id="hud-share-count" class="px-1.5 py-0.2 rounded bg-obsidian-950 text-[10px] font-mono text-amber-300">0/3</span>
+          </button>
+
+          <!-- Streak Pill -->
+          <div class="px-2.5 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center gap-1.5" title="Winter Arc Streak">
+            <i class="fa-solid fa-fire text-amber-400 text-sm"></i>
+            <span id="hud-streak" class="font-display font-bold text-sm text-amber-300">1d</span>
+          </div>
+
+          <!-- Winter Coins Pill -->
+          <div class="px-3 py-1.5 rounded-xl bg-ice-500/15 border border-ice-400/30 flex items-center gap-1.5 shadow-inner">
+            <i class="fa-solid fa-coins text-yellow-400 text-sm"></i>
+            <span id="hud-coins" class="font-display font-bold text-sm text-white">100</span>
+          </div>
+
+          <!-- Demo Boost (+500 Coins) Button -->
+          <button onclick="demoBoostCoins()" class="px-2.5 py-1.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-400/30 text-emerald-300 text-xs font-bold transition-all flex items-center gap-1" title="Add 500 Winter Coins to test Shop upgrades immediately">
+            <i class="fa-solid fa-bolt"></i>
+            <span class="hidden lg:inline">Demo</span> +500
+          </button>
+
+          <!-- Settings / Reset Button -->
+          <button id="sound-toggle-btn" onclick="toggleSound()" class="w-9 h-9 rounded-xl bg-obsidian-800 hover:bg-obsidian-700 border border-slate-700 flex items-center justify-center text-slate-300 transition-all" title="Sound on/off" aria-label="Toggle sound">
+            <i class="fa-solid fa-volume-high text-sm"></i>
+          </button>
+          <button onclick="openSettingsModal()" class="w-9 h-9 rounded-xl bg-obsidian-800 hover:bg-obsidian-700 border border-slate-700 flex items-center justify-center text-slate-300 transition-all" title="Contract, Goals & Settings">
+            <i class="fa-solid fa-gear text-sm"></i>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN CONTENT GRID: Left/Center = Interactive Room Stage | Right = Action Panel -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+      <!-- LEFT COLUMN (7 cols): Interactive Living Room & Avatar Stage -->
+      <section class="lg:col-span-7 flex flex-col gap-4">
+        <div class="relative rounded-3xl overflow-hidden border border-ice-400/25 bg-obsidian-900 shadow-2xl">
+          <!-- Room Top Floating Overlay -->
+          <div class="absolute top-3 left-3 right-3 z-20 flex items-center justify-between pointer-events-none">
+            <div class="px-3 py-1.5 rounded-full bg-obsidian-950/75 backdrop-blur-md border border-white/10 flex items-center gap-2 pointer-events-auto">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span id="room-status-label" class="text-xs font-semibold text-slate-200">Starter Bare Room</span>
+            </div>
+
+            <button onclick="interactWithAvatar()" class="pointer-events-auto px-3 py-1.5 rounded-full bg-ice-500/20 hover:bg-ice-500/35 backdrop-blur-md border border-ice-400/30 text-xs font-semibold text-ice-200 transition-all flex items-center gap-1.5">
+              <i class="fa-solid fa-hand-sparkles"></i> Hype Up
+            </button>
+          </div>
+
+          <!-- Floating Speech Bubble when Avatar speaks -->
+          <div id="avatar-speech-bubble" class="absolute top-16 left-1/2 -translate-x-1/2 z-20 px-4 py-2 rounded-2xl bg-white text-obsidian-950 font-semibold text-xs sm:text-sm shadow-xl border-2 border-ice-400 transition-all duration-300 opacity-0 scale-90 pointer-events-none whitespace-nowrap">
+            Let's lock in today! ❄️
+          </div>
+
+          <!-- Floating Reward Anchor -->
+          <div id="room-floating-rewards" class="absolute inset-0 z-30 pointer-events-none flex items-center justify-center"></div>
+
+          <!-- SVG LIVING ROOM STAGE (16:11 Aspect Ratio) -->
+          <div class="w-full aspect-[16/11] bg-slate-900 relative select-none">
+            <svg id="living-room-svg" viewBox="0 0 800 550" class="w-full h-full block" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <!-- Wall & Floor Gradients (Dynamic Wall & Floor Colors supported) -->
+                <linearGradient id="wallGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop id="wall-grad-top" offset="0%" stop-color="#182032" />
+                  <stop id="wall-grad-bottom" offset="100%" stop-color="#101624" />
+                </linearGradient>
+                <linearGradient id="floorGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop id="floor-grad-top" offset="0%" stop-color="#23293a" />
+                  <stop id="floor-grad-bottom" offset="100%" stop-color="#151924" />
+                </linearGradient>
+                <linearGradient id="skyNightGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#050b1a" />
+                  <stop offset="60%" stop-color="#0f2547" />
+                  <stop offset="100%" stop-color="#1e3a6e" />
+                </linearGradient>
+                <radialGradient id="fireGlow" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stop-color="#f97316" stop-opacity="0.38" />
+                  <stop offset="100%" stop-color="#f97316" stop-opacity="0" />
+                </radialGradient>
+                <radialGradient id="rugGrad" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stop-color="#1e3a5f" />
+                  <stop offset="85%" stop-color="#152842" />
+                  <stop offset="100%" stop-color="#38bdf8" stop-opacity="0.4" />
+                </radialGradient>
+                <clipPath id="sitClip"><rect id="sit-clip-rect" x="0" y="0" width="800" height="436"/></clipPath>
+              </defs>
+
+              <!-- 1. BASE EMPTY ROOM ARCHITECTURE -->
+              <!-- Back Wall -->
+              <rect x="0" y="0" width="800" height="390" fill="url(#wallGrad)" />
+              <!-- Subtle Wall Panel Lines -->
+              <line id="wall-trim-line" x1="0" y1="390" x2="800" y2="390" stroke="#2d3748" stroke-width="4" />
+              <!-- Baseboard -->
+              <rect id="wall-baseboard" x="0" y="376" width="800" height="14" fill="#0d121d" />
+              <!-- Floor -->
+              <polygon points="0,390 800,390 800,550 0,550" fill="url(#floorGrad)" />
+              <!-- Floorboard Perspective Lines -->
+              <line x1="160" y1="390" x2="40" y2="550" class="floor-line" stroke="#1b2130" stroke-width="2" />
+              <line x1="320" y1="390" x2="260" y2="550" class="floor-line" stroke="#1b2130" stroke-width="2" />
+              <line x1="480" y1="390" x2="540" y2="550" class="floor-line" stroke="#1b2130" stroke-width="2" />
+              <line x1="640" y1="390" x2="760" y2="550" class="floor-line" stroke="#1b2130" stroke-width="2" />
+
+              <!-- Bare Starter Bulb Cord -->
+              <g id="room-starter-bulb">
+                <line x1="400" y1="0" x2="400" y2="48" stroke="#475569" stroke-width="2" />
+                <path d="M392 48 L408 48 L405 56 L395 56 Z" fill="#334155" />
+                <circle cx="400" cy="63" r="8" fill="#fef08a" opacity="0.85" />
+                <circle cx="400" cy="63" r="36" fill="#fef08a" opacity="0.08" />
+              </g>
+
+              <!-- 2. UPGRADEABLE ROOM DECOR LAYERS (Toggled dynamically) -->
+
+              <!-- UPGRADE: Panoramic Snowy City Window -->
+              <g id="decor-window" class="hidden furniture-hit" onclick="goToSpot('window')">
+                <rect x="95" y="75" width="180" height="195" rx="10" fill="#090d16" stroke="#334155" stroke-width="6" />
+                <rect x="103" y="83" width="164" height="179" rx="6" fill="url(#skyNightGrad)" />
+                <!-- Moon -->
+                <circle cx="230" cy="115" r="14" fill="#e0f2fe" opacity="0.9" />
+                <!-- City Silhouette -->
+                <rect x="110" y="180" width="26" height="82" fill="#071124" />
+                <rect x="140" y="155" width="32" height="107" fill="#09162e" />
+                <rect x="176" y="170" width="28" height="92" fill="#060e1f" />
+                <rect x="208" y="145" width="36" height="117" fill="#0b1a36" />
+                <!-- City Lit Windows -->
+                <rect x="148" y="168" width="4" height="4" fill="#38bdf8" />
+                <rect x="158" y="182" width="4" height="4" fill="#fde047" />
+                <rect x="216" y="160" width="4" height="4" fill="#38bdf8" />
+                <rect x="228" y="175" width="4" height="4" fill="#bae6fd" />
+                <!-- Falling Snowflakes -->
+                <circle cx="130" cy="110" r="2" fill="#fff" opacity="0.8" />
+                <circle cx="165" cy="130" r="2.5" fill="#fff" opacity="0.7" />
+                <circle cx="195" cy="105" r="1.8" fill="#fff" opacity="0.9" />
+                <circle cx="245" cy="140" r="2" fill="#fff" opacity="0.75" />
+                <!-- Window Panes -->
+                <line x1="185" y1="83" x2="185" y2="262" stroke="#334155" stroke-width="4" />
+                <line x1="103" y1="172" x2="267" y2="172" stroke="#334155" stroke-width="4" />
+                <!-- Sill -->
+                <rect x="88" y="268" width="194" height="10" rx="4" fill="#475569" />
+              </g>
+
+              <!-- UPGRADE: Neon "LOCK IN" LED Wall Sign -->
+              <g id="decor-neon" class="hidden neon-glow">
+                <rect x="515" y="64" width="185" height="54" rx="12" fill="#081226" stroke="#38bdf8" stroke-width="2.5" />
+                <text x="607" y="98" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-weight="700" font-size="22" fill="#7dd3fc" letter-spacing="3">
+                  LOCK IN ❄️
+                </text>
+              </g>
+
+              <!-- UPGRADE: Framed Abstract Wall Painting -->
+              <g id="decor-painting" class="hidden">
+                <!-- Gold/Walnut Frame -->
+                <rect x="335" y="88" width="130" height="92" rx="6" fill="#451a03" stroke="#d97706" stroke-width="3" />
+                <!-- Canvas -->
+                <rect x="344" y="97" width="112" height="74" fill="#0f172a" />
+                <!-- Modern Geometric Mountain & Sun Art -->
+                <circle cx="426" cy="118" r="13" fill="#f59e0b" />
+                <polygon points="344,171 382,124 416,171" fill="#38bdf8" opacity="0.85" />
+                <polygon points="384,171 418,134 456,171" fill="#818cf8" opacity="0.9" />
+              </g>
+
+              <!-- UPGRADE: Cozy Stone Fireplace -->
+              <g id="decor-fireplace" class="hidden" transform="translate(555 390) scale(.82) translate(-175 -390)">
+                <!-- Ambient Warm Glow -->
+                <circle cx="175" cy="340" r="115" fill="url(#fireGlow)" />
+                <!-- Mantle & Structure -->
+                <rect x="95" y="255" width="160" height="135" rx="6" fill="#1e293b" stroke="#334155" stroke-width="2" />
+                <rect x="85" y="245" width="180" height="14" rx="4" fill="#475569" />
+                <!-- Firebox -->
+                <path d="M125 390 L125 310 Q175 285 225 310 L225 390 Z" fill="#090d16" />
+                <!-- Logs -->
+                <rect x="142" y="372" width="66" height="10" rx="4" fill="#451a03" />
+                <!-- Animated Flame -->
+                <g class="flame-anim">
+                  <path d="M175 315 C195 340, 200 365, 175 375 C150 365, 155 340, 175 315 Z" fill="#f97316" />
+                  <path d="M175 332 C187 348, 190 365, 175 373 C160 365, 163 348, 175 332 Z" fill="#facc15" />
+                </g>
+              </g>
+
+              <!-- UPGRADE: Bookshelf (side-on, against the right wall) -->
+              <g id="decor-bookshelf" class="hidden furniture-hit" onclick="goToSpot('bookshelf')">
+                <g transform="translate(742 168) skewY(-14)">
+                  <rect x="0" y="0" width="54" height="232" rx="4" fill="#1e293b" stroke="#334155" stroke-width="2" />
+                  <rect x="46" y="2" width="6" height="228" fill="#0f172a" />
+                  <line x1="3" y1="58" x2="46" y2="58" stroke="#475569" stroke-width="4" />
+                  <line x1="3" y1="116" x2="46" y2="116" stroke="#475569" stroke-width="4" />
+                  <line x1="3" y1="174" x2="46" y2="174" stroke="#475569" stroke-width="4" />
+                  <rect x="6" y="18" width="7" height="38" rx="2" fill="#38bdf8" />
+                  <rect x="15" y="22" width="6" height="34" rx="2" fill="#818cf8" />
+                  <rect x="23" y="16" width="9" height="40" rx="2" fill="#f43f5e" />
+                  <path d="M16 80 L32 80 L29 96 L19 96 Z" fill="#facc15" />
+                  <rect x="22" y="96" width="4" height="8" fill="#eab308" />
+                  <rect x="17" y="104" width="14" height="5" rx="2" fill="#ca8a04" />
+                  <rect x="6" y="134" width="9" height="38" rx="2" fill="#34d399" />
+                  <rect x="17" y="138" width="7" height="34" rx="2" fill="#fbbf24" />
+                  <rect x="26" y="131" width="10" height="41" rx="2" fill="#60a5fa" />
+                  <rect x="8" y="192" width="8" height="36" rx="2" fill="#a78bfa" />
+                  <rect x="18" y="196" width="10" height="32" rx="2" fill="#fb923c" />
+                </g>
+              </g>
+
+              <!-- UPGRADE: Plush Frost Rug -->
+              <g id="decor-rug" class="hidden">
+                <ellipse cx="400" cy="462" rx="215" ry="52" fill="url(#rugGrad)" stroke="#38bdf8" stroke-width="2" stroke-dasharray="8 6" />
+                <ellipse cx="400" cy="462" rx="185" ry="40" fill="none" stroke="#7dd3fc" stroke-width="1" opacity="0.4" />
+              </g>
+
+              <!-- UPGRADE: Plush Modern Velvet Couch (back layer) -->
+              <g id="decor-couch" class="hidden furniture-hit" transform="translate(225 17)" onclick="goToSpot('couch')">
+                <rect x="82" y="422" width="10" height="16" rx="2" fill="#0f172a" />
+                <rect x="258" y="422" width="10" height="16" rx="2" fill="#0f172a" />
+                <rect x="78" y="336" width="194" height="54" rx="14" fill="#1e3a5f" stroke="#38bdf8" stroke-width="1.5" />
+                <line x1="142" y1="342" x2="142" y2="384" stroke="#0f172a" stroke-width="2" />
+                <line x1="208" y1="342" x2="208" y2="384" stroke="#0f172a" stroke-width="2" />
+              </g>
+
+              <!-- UPGRADE: Lush Monstera Indoor Plant -->
+              <g id="decor-plant" class="hidden" transform="translate(-14 0)">
+                <!-- Ceramic Pot -->
+                <path d="M675 355 L725 355 L717 412 L683 412 Z" fill="#e2e8f0" />
+                <rect x="671" y="348" width="58" height="10" rx="4" fill="#cbd5e1" />
+                <!-- Leaves -->
+                <path d="M700 348 Q665 305 655 325 Q675 345 700 348 Z" fill="#10b981" />
+                <path d="M700 348 Q735 300 748 322 Q725 345 700 348 Z" fill="#059669" />
+                <path d="M700 348 Q680 280 700 272 Q720 280 700 348 Z" fill="#34d399" />
+                <path d="M700 348 Q660 330 650 350 Q675 358 700 348 Z" fill="#047857" />
+              </g>
+
+              <!-- UPGRADE: Desk (back layer: monitor + lamp) -->
+              <g id="decor-desk" class="hidden furniture-hit" onclick="goToSpot('desk')">
+                <rect x="132" y="325" width="16" height="20" fill="#1e293b" />
+                <rect x="85" y="275" width="110" height="54" rx="5" fill="#090d16" stroke="#38bdf8" stroke-width="2" />
+                <rect x="95" y="286" width="42" height="5" rx="2" fill="#38bdf8" />
+                <rect x="95" y="296" width="68" height="4" rx="2" fill="#818cf8" />
+                <rect x="95" y="305" width="54" height="4" rx="2" fill="#34d399" />
+                <path d="M62 345 L62 315 L78 305" fill="none" stroke="#94a3b8" stroke-width="3" />
+                <circle cx="80" cy="306" r="5" fill="#fde047" />
+              </g>
+              <!-- Office chair (back) -->
+              <rect id="chair-back" class="hidden" x="148" y="305" width="44" height="62" rx="12" fill="#1f2937" stroke="#334155" stroke-width="2" />
+
+              <!-- 3. CENTERPIECE: INTERACTIVE CHARACTER AVATAR -->
+              <ellipse id="avatar-shadow" cx="400" cy="492" rx="50" ry="11" fill="#000000" opacity="0.45" style="transition: all 1s" />
+
+              <g id="avatar-clip">
+                <g id="avatar-mover" style="transform: translate(328px, 279px) scale(0.8);">
+                  <g id="avatar-pose">
+                    <g id="room-avatar-group" class="cursor-pointer avatar-breathe" onclick="avatarClicked()"></g>
+                    <g id="pose-hands" class="hidden" style="color:#c68642" stroke="currentColor" fill="currentColor">
+                      <g class="hand-l"><line x1="52" y1="148" x2="76" y2="170" stroke-width="10" stroke-linecap="round" /><circle cx="76" cy="171" r="7" stroke="none" /></g>
+                      <g class="hand-r"><line x1="128" y1="148" x2="104" y2="170" stroke-width="10" stroke-linecap="round" /><circle cx="104" cy="171" r="7" stroke="none" /></g>
+                    </g>
+                    <g id="held-book" class="hidden">
+                      <path d="M60 156 L90 164 L90 192 L60 184 Z" fill="#f59e0b" stroke="#78350f" stroke-width="1.5" />
+                      <path d="M120 156 L90 164 L90 192 L120 184 Z" fill="#fbbf24" stroke="#78350f" stroke-width="1.5" />
+                    </g>
+                  </g>
+                </g>
+              </g>
+
+              <!-- FRONT LAYERS (drawn over the avatar when seated / at the desk) -->
+              <g id="front-layers">
+                <g id="decor-couch-front" class="hidden furniture-hit" transform="translate(225 17)" onclick="goToSpot('couch')">
+                  <rect x="74" y="382" width="202" height="28" rx="8" fill="#254875" stroke="#38bdf8" stroke-width="1.5" />
+                  <rect x="74" y="406" width="202" height="18" rx="6" fill="#152842" />
+                  <rect x="64" y="362" width="22" height="58" rx="9" fill="#1b3454" stroke="#38bdf8" stroke-width="1.5" />
+                  <rect x="264" y="362" width="22" height="58" rx="9" fill="#1b3454" stroke="#38bdf8" stroke-width="1.5" />
+                  <rect x="92" y="354" width="28" height="26" rx="6" transform="rotate(-8 92 354)" fill="#f59e0b" />
+                </g>
+                <g id="decor-desk-front" class="hidden furniture-hit" onclick="goToSpot('desk')">
+                  <rect x="55" y="355" width="10" height="75" fill="#0f172a" />
+                  <rect x="215" y="355" width="10" height="75" fill="#0f172a" />
+                  <rect x="45" y="345" width="190" height="12" rx="4" fill="#334155" />
+                  <rect x="140" y="340" width="62" height="6" rx="2" fill="#475569" />
+                </g>
+                <g id="chair-front" class="hidden">
+                  <rect x="142" y="366" width="56" height="10" rx="4" fill="#111827" stroke="#334155" stroke-width="1.5" />
+                  <rect x="166" y="376" width="8" height="34" fill="#1f2937" />
+                  <line x1="146" y1="412" x2="194" y2="412" stroke="#1f2937" stroke-width="5" stroke-linecap="round" />
+                </g>
+              </g>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Quick Stats & Goal Banner Below Room -->
+        <div class="frost-panel rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-ice-500/15 border border-ice-400/25 flex items-center justify-center text-ice-300 shrink-0">
+              <i class="fa-solid fa-bullseye"></i>
+            </div>
+            <div>
+              <p class="text-[11px] font-bold uppercase tracking-wider text-ice-400">Winter Arc Target Goal</p>
+              <p id="hub-target-goal" class="text-sm font-semibold text-white">Lock in and level up every single day.</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <button onclick="openGoalsEvolutionModal()" class="px-3 py-1.5 rounded-xl bg-ice-500/15 hover:bg-ice-500/25 border border-ice-400/30 text-ice-300 font-bold text-xs transition-all flex items-center gap-1.5">
+              <i class="fa-solid fa-pen-to-square"></i> Evolve Goals & Habits
+            </button>
+            <div class="flex items-center gap-4 text-xs text-slate-300 border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-800 hidden sm:flex">
+              <div>
+                <span class="text-slate-400 block text-[10px] uppercase">Height</span>
+                <span id="hub-stat-height" class="font-bold text-white">--</span>
+              </div>
+              <div>
+                <span class="text-slate-400 block text-[10px] uppercase">Current Wt</span>
+                <span id="hub-stat-weight" class="font-bold text-ice-300">--</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- RIGHT COLUMN (5 cols): Gamified Control Tabs (Daily Check-In, Shop, Progress) -->
+      <section class="lg:col-span-5 flex flex-col gap-4">
+        <!-- Navigation Pills -->
+        <div class="grid grid-cols-3 gap-2 p-1.5 rounded-2xl frost-panel">
+          <button onclick="switchHubTab('checkin')" id="tab-btn-checkin" class="py-2.5 px-3 rounded-xl font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-1.5 bg-ice-500 text-obsidian-950 shadow-md">
+            <i class="fa-solid fa-camera"></i> Check-In
+          </button>
+          <button onclick="switchHubTab('shop')" id="tab-btn-shop" class="py-2.5 px-3 rounded-xl font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-1.5 text-slate-300 hover:text-white">
+            <i class="fa-solid fa-store"></i> Shop
+          </button>
+          <button onclick="switchHubTab('progress')" id="tab-btn-progress" class="py-2.5 px-3 rounded-xl font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-1.5 text-slate-300 hover:text-white">
+            <i class="fa-solid fa-chart-line"></i> Track
+          </button>
+        </div>
+
+        <!-- TAB 1: DAILY CHECK-IN & PHOTO PROOF -->
+        <div id="hub-tab-checkin" class="frost-panel rounded-3xl p-5 space-y-4">
+          <div class="flex items-center justify-between gap-2">
+            <div>
+              <h3 class="font-display font-bold text-lg text-white">Daily Lock-In Checklist</h3>
+              <p class="text-xs text-slate-400">1 check-in per habit daily • Photo proof required (<span class="text-yellow-400 font-semibold">+50 Coins</span> & <span class="text-ice-300 font-semibold">+35 XP</span>).</p>
+            </div>
+            <button id="demo-next-day-btn" onclick="startNewDayCycle()" class="px-2.5 py-1.5 rounded-lg bg-obsidian-800 hover:bg-obsidian-700 border border-slate-700 text-[11px] font-semibold text-slate-300 transition-all shrink-0" title="Simulate tomorrow to test daily reset & streaks">
+              Next Day (Demo) <i class="fa-solid fa-forward-step ml-1"></i>
+            </button>
+          </div>
+
+          <!-- Daily Habits List -->
+          <div id="daily-habits-container" class="space-y-3"></div>
+
+          <!-- Recent Photo Proof Feed -->
+          <div class="pt-3 border-t border-slate-800/80 space-y-2.5">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Recent Verified Proofs</span>
+              <span id="proof-feed-count" class="text-[11px] font-mono text-ice-300">0 entries</span>
+            </div>
+            <div id="proof-feed-list" class="grid grid-cols-2 gap-2.5 max-h-56 overflow-y-auto pr-1"></div>
+          </div>
+        </div>
+
+        <!-- TAB 2: THE WINTER ARC SHOP (WARDROBE, ROOM DECOR, WALLS & FLOORS) -->
+        <div id="hub-tab-shop" class="frost-panel rounded-3xl p-5 space-y-4 hidden">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <h3 class="font-display font-bold text-lg text-white">Winter Armory & Studio</h3>
+              <p class="text-xs text-slate-400">Outfits, interactive furniture, walls & floors.</p>
+            </div>
+            <!-- Shop Sub-filter -->
+            <div class="flex bg-obsidian-950 p-1 rounded-xl border border-slate-800 self-start">
+              <button onclick="setShopCategory('outfits')" id="shop-cat-outfits" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-ice-500/20 text-ice-300">
+                Outfits
+              </button>
+              <button onclick="setShopCategory('room')" id="shop-cat-room" class="px-2.5 py-1 rounded-lg text-xs font-bold text-slate-400 hover:text-white">
+                Furniture
+              </button>
+              <button onclick="setShopCategory('walls')" id="shop-cat-walls" class="px-2.5 py-1 rounded-lg text-xs font-bold text-slate-400 hover:text-white">
+                Wall Paint
+              </button>
+              <button onclick="setShopCategory('floors')" id="shop-cat-floors" class="px-2.5 py-1 rounded-lg text-xs font-bold text-slate-400 hover:text-white">
+                Flooring
+              </button>
+            </div>
+          </div>
+
+          <div id="shop-items-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[450px] overflow-y-auto pr-1"></div>
+        </div>
+
+        <!-- TAB 3: WEEKLY-GATED PROGRESS & ASPECT TRACKER -->
+        <div id="hub-tab-progress" class="frost-panel rounded-3xl p-5 space-y-4 hidden">
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <h3 class="font-display font-bold text-lg text-white">Weekly Transformation Log</h3>
+              <p class="text-xs text-slate-400">Updates unlock every 7 days for true progress tracking.</p>
+            </div>
+            <button type="button" onclick="demoFastForwardWeek()" class="px-2.5 py-1.5 rounded-lg bg-obsidian-800 hover:bg-obsidian-700 border border-slate-700 text-[11px] font-semibold text-ice-300 transition-all shrink-0" title="Simulate 7 days passing to unlock the next weekly log">
+              +7 Days (Demo)
+            </button>
+          </div>
+
+          <!-- Weekly Cooldown Status Banner -->
+          <div id="weekly-lock-banner" class="hidden p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-between gap-3">
+            <div class="flex items-center gap-2.5">
+              <i class="fa-solid fa-clock text-amber-400 text-base"></i>
+              <div>
+                <p class="text-xs font-bold text-amber-200">Weekly Check-In Locked</p>
+                <p id="weekly-lock-subtext" class="text-[11px] text-amber-300/80">Next progress update available in 7 days.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tailored Dynamic Metric Form -->
+          <form id="weekly-progress-form" onsubmit="logMetricUpdate(event)" class="bg-obsidian-950/80 p-4 rounded-2xl border border-slate-800 space-y-3">
+            <div id="dynamic-metric-fields" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5"></div>
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-400 mb-1">Weekly Reflection & Win Summary</label>
+              <input id="track-note-input" type="text" placeholder="e.g. Down 2 lbs, skin clearer, stayed disciplined all week" maxlength="80" class="w-full px-3 py-2 rounded-xl bg-obsidian-900 border border-slate-700 text-xs text-white focus:border-ice-400 focus:outline-none" />
+            </div>
+            <button id="weekly-submit-btn" type="submit" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-ice-500 to-blue-600 hover:from-ice-400 hover:to-blue-500 text-white font-bold text-xs shadow-md transition-all">
+              + Log Weekly Progress (+50 XP)
+            </button>
+          </form>
+
+          <!-- Daily Mood & One-Line Micro-Journal -->
+          <div class="bg-obsidian-950/80 p-4 rounded-2xl border border-slate-800 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-white flex items-center gap-1.5">
+                <i class="fa-solid fa-face-smile text-ice-400"></i> Daily Mood & One-Line Log
+              </span>
+              <span class="text-[10px] font-mono text-slate-400">Quick Daily Pulse</span>
+            </div>
+            <div id="mood-selector-row" class="grid grid-cols-5 gap-1.5">
+              <button type="button" onclick="selectDailyMood('Locked In', '🔥')" data-mood="Locked In" class="mood-btn py-2 rounded-xl bg-obsidian-900 border border-slate-800 hover:border-ice-400/50 text-center transition-all">
+                <span class="block text-base">🔥</span>
+                <span class="text-[9px] font-bold text-slate-300">Locked In</span>
+              </button>
+              <button type="button" onclick="selectDailyMood('Focused', '❄️')" data-mood="Focused" class="mood-btn py-2 rounded-xl bg-obsidian-900 border border-slate-800 hover:border-ice-400/50 text-center transition-all">
+                <span class="block text-base">❄️</span>
+                <span class="text-[9px] font-bold text-slate-300">Focused</span>
+              </button>
+              <button type="button" onclick="selectDailyMood('Steady', '⚡')" data-mood="Steady" class="mood-btn py-2 rounded-xl bg-obsidian-900 border border-slate-800 hover:border-ice-400/50 text-center transition-all">
+                <span class="block text-base">⚡</span>
+                <span class="text-[9px] font-bold text-slate-300">Steady</span>
+              </button>
+              <button type="button" onclick="selectDailyMood('Tired', '🔋')" data-mood="Tired" class="mood-btn py-2 rounded-xl bg-obsidian-900 border border-slate-800 hover:border-ice-400/50 text-center transition-all">
+                <span class="block text-base">🔋</span>
+                <span class="text-[9px] font-bold text-slate-300">Low Batt</span>
+              </button>
+              <button type="button" onclick="selectDailyMood('Grateful', '✨')" data-mood="Grateful" class="mood-btn py-2 rounded-xl bg-obsidian-900 border border-slate-800 hover:border-ice-400/50 text-center transition-all">
+                <span class="block text-base">✨</span>
+                <span class="text-[9px] font-bold text-slate-300">Grateful</span>
+              </button>
+            </div>
+            <div class="flex gap-2">
+              <input id="daily-mood-line" type="text" placeholder="One line about today (e.g. Woke up at 6am, crushed workout)" maxlength="75" class="flex-1 px-3 py-2 rounded-xl bg-obsidian-900 border border-slate-700 text-xs text-white focus:border-ice-400 focus:outline-none" />
+              <button type="button" onclick="saveDailyMoodEntry()" class="px-3.5 py-2 rounded-xl bg-ice-500/20 hover:bg-ice-500/30 border border-ice-400/30 text-ice-300 font-bold text-xs shrink-0 transition-all">
+                Save
+              </button>
+            </div>
+            <div id="daily-mood-history" class="space-y-1.5 max-h-28 overflow-y-auto pr-1"></div>
+          </div>
+
+          <!-- Chosen Aspects Mastery Bars -->
+          <div class="space-y-2.5">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Your Active Winter Arc Aspects</span>
+            <div id="aspect-progress-bars" class="space-y-2.5 max-h-40 overflow-y-auto pr-1"></div>
+          </div>
+
+          <!-- Metric History Log -->
+          <div class="space-y-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Weekly Check-In History</span>
+            <div id="metric-history-list" class="space-y-2 max-h-36 overflow-y-auto pr-1 text-xs"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL: PHOTO PROOF CHECK-IN (STRICT REAL PHOTO + SMART VERIFICATION)  -->
+  <!-- ===================================================================== -->
+  <div id="proof-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="w-full max-w-md frost-panel rounded-3xl p-6 border border-ice-400/30 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between">
+        <div>
+          <span class="text-[11px] font-bold uppercase tracking-wider text-ice-400">Strict Photo Verification</span>
+          <h3 id="proof-modal-habit-title" class="font-display font-bold text-lg text-white">Complete Habit</h3>
+        </div>
+        <button onclick="closeProofModal()" class="w-8 h-8 rounded-full bg-obsidian-800 hover:bg-obsidian-700 text-slate-400 flex items-center justify-center">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Preview Box -->
+      <div id="proof-preview-area" class="w-full h-48 rounded-2xl bg-obsidian-950 border-2 border-dashed border-slate-700 flex flex-col items-center justify-center overflow-hidden relative">
+        <div id="proof-placeholder-content" class="text-center p-4 space-y-2">
+          <div class="w-12 h-12 rounded-2xl bg-ice-500/15 text-ice-400 flex items-center justify-center mx-auto text-xl">
+            <i class="fa-solid fa-camera-retro"></i>
+          </div>
+          <p class="text-xs text-slate-300 font-semibold">Real Photo Proof Required</p>
+          <p class="text-[11px] text-slate-400">Snap or upload a real photo showing you completed this habit.</p>
+        </div>
+        <img id="proof-uploaded-img" class="hidden w-full h-full object-cover" alt="Proof preview" />
+
+        <!-- AI Verification Scanner Overlay -->
+        <div id="proof-scanner-overlay" class="hidden absolute inset-0 bg-obsidian-950/75 backdrop-blur-[2px] flex flex-col items-center justify-center">
+          <div class="scanner-bar absolute left-0 right-0 h-1 bg-ice-400 shadow-[0_0_12px_#38bdf8]"></div>
+          <i class="fa-solid fa-shield-halved text-ice-400 text-2xl animate-pulse mb-1.5"></i>
+          <span class="text-xs font-mono font-bold text-ice-200">VERIFYING HABIT PROOF...</span>
+        </div>
+      </div>
+
+      <!-- Verification Feedback / Edge Case Warning Banner -->
+      <div id="proof-verification-msg" class="hidden p-3 rounded-xl border text-xs font-semibold"></div>
+
+      <!-- Photo Upload / Camera Capture Input -->
+      <div>
+        <label class="cursor-pointer w-full py-3 px-4 rounded-xl bg-obsidian-800 hover:bg-obsidian-700 border border-ice-400/30 text-xs font-bold text-ice-200 flex items-center justify-center gap-2 transition-all">
+          <i class="fa-solid fa-camera text-ice-400"></i>
+          <span id="upload-btn-label">Take Photo or Choose Image</span>
+          <input id="proof-file-input" type="file" accept="image/*" capture="environment" class="hidden" onchange="handleProofFileUpload(event)" />
+        </label>
+      </div>
+
+      <!-- Optional Caption -->
+      <div>
+        <input id="proof-caption-input" type="text" placeholder="Add proof context (e.g. '45 min leg day done')" maxlength="50" class="w-full px-3.5 py-2.5 rounded-xl bg-obsidian-950 border border-slate-700 text-xs text-white focus:border-ice-400 focus:outline-none" />
+      </div>
+
+      <button id="submit-proof-btn" onclick="submitHabitProof()" disabled class="w-full py-3.5 rounded-xl bg-slate-800 text-slate-500 font-bold text-sm transition-all flex items-center justify-center gap-2 cursor-not-allowed">
+        <i class="fa-solid fa-lock"></i> Upload Verified Photo to Claim
+      </button>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL: SHARE WITH 3 FRIENDS INSTANT XP & COIN STARTER BOOST           -->
+  <!-- ===================================================================== -->
+  <div id="share-boost-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="w-full max-w-md frost-panel rounded-3xl p-6 border border-ice-400/35 space-y-5 shadow-2xl relative overflow-hidden">
+      <div class="flex items-start justify-between gap-2">
+        <div>
+          <span class="px-2.5 py-0.5 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 text-[10px] font-bold uppercase tracking-wider">
+            Instant Starter Boost
+          </span>
+          <h3 class="font-display font-bold text-xl text-white mt-1.5">Ditch the Hospital Gown Fast!</h3>
+          <p class="text-xs text-slate-300 mt-1">Share your Winter Arc invite link with <span class="text-ice-300 font-bold">3 friends</span> to immediately unlock <span class="text-amber-300 font-bold">+150 XP & +120 Coins</span> for your first outfit upgrade.</p>
+        </div>
+        <button onclick="closeShareBoostModal()" class="w-8 h-8 rounded-full bg-obsidian-800 hover:bg-obsidian-700 text-slate-400 flex items-center justify-center shrink-0">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Invite Link Box -->
+      <div class="bg-obsidian-950 p-3 rounded-2xl border border-slate-800 flex items-center justify-between gap-2">
+        <span id="invite-link-text" class="text-xs font-mono text-ice-300 truncate">https://winterarc.gg/join?ref=challenger</span>
+        <button type="button" onclick="copyInviteLink()" class="px-3 py-1.5 rounded-xl bg-obsidian-800 hover:bg-obsidian-700 text-xs font-bold text-white shrink-0">
+          <i class="fa-regular fa-copy mr-1"></i> Copy
+        </button>
+      </div>
+
+      <!-- 3 Friend Share Slots -->
+      <div class="space-y-2.5">
+        <div class="flex items-center justify-between text-xs font-semibold">
+          <span class="text-slate-400">Friends Invited</span>
+          <span id="share-modal-progress" class="text-ice-300 font-mono font-bold">0 / 3</span>
+        </div>
+        <div class="grid grid-cols-3 gap-2.5" id="share-slots-grid"></div>
+      </div>
+
+      <button id="claim-share-reward-btn" onclick="claimShareBoostReward()" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 text-obsidian-950 font-extrabold text-sm shadow-lg transition-all flex items-center justify-center gap-2">
+        <i class="fa-solid fa-paper-plane"></i> Send Invite #1 (0/3)
+      </button>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL: SETTINGS & SIGNED CONTRACT VIEWER                              -->
+  <!-- ===================================================================== -->
+  <div id="settings-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="w-full max-w-md frost-panel rounded-3xl p-6 border border-ice-400/30 space-y-5 shadow-2xl max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between">
+        <h3 class="font-display font-bold text-lg text-white">Winter Arc Pact & Storage</h3>
+        <button onclick="closeSettingsModal()" class="w-8 h-8 rounded-full bg-obsidian-800 hover:bg-obsidian-700 text-slate-400 flex items-center justify-center">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Data Persistence Explanation & Export/Import -->
+      <div class="bg-obsidian-950/90 p-4 rounded-2xl border border-slate-800 space-y-3">
+        <div class="flex items-center gap-2 text-xs font-bold text-ice-300">
+          <i class="fa-solid fa-database text-ice-400"></i> Local Storage & Backup
+        </div>
+        <p class="text-[11px] text-slate-300 leading-relaxed">
+          Your progress, streak, avatar items, and proofs are automatically saved in your browser's local storage. To never lose progress across devices or browsers, you can export your save file as JSON or import a backup.
+        </p>
+        <div class="grid grid-cols-2 gap-2 pt-1">
+          <button onclick="exportSaveData()" class="py-2 px-3 rounded-xl bg-obsidian-900 hover:bg-obsidian-800 border border-slate-700 text-xs font-bold text-slate-200 flex items-center justify-center gap-1.5 transition-all">
+            <i class="fa-solid fa-download text-ice-400"></i> Export Backup
+          </button>
+          <label class="py-2 px-3 rounded-xl bg-obsidian-900 hover:bg-obsidian-800 border border-slate-700 text-xs font-bold text-slate-200 flex items-center justify-center gap-1.5 transition-all cursor-pointer">
+            <i class="fa-solid fa-upload text-emerald-400"></i> Import Backup
+            <input type="file" accept=".json" onchange="importSaveData(event)" class="hidden" />
+          </label>
+        </div>
+      </div>
+
+      <div class="bg-obsidian-950/90 p-4 rounded-2xl border border-slate-800 space-y-3">
+        <p class="text-xs text-slate-300 italic leading-relaxed">
+          "I agree to lock in and stick to my Winter Arc habits and build my future self."
+        </p>
+        <div class="border-t border-slate-800 pt-2">
+          <span class="text-[10px] uppercase tracking-wider text-slate-500 block mb-1">Signed Pledge</span>
+          <img id="saved-signature-img" class="h-16 bg-obsidian-900 rounded-lg border border-slate-800 p-1" alt="User Signature" />
+        </div>
+      </div>
+
+      <div class="space-y-2.5">
+        <button onclick="demoBoostCoins(); closeSettingsModal();" class="w-full py-2.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/30 text-emerald-300 font-bold text-xs transition-all">
+          <i class="fa-solid fa-bolt mr-1.5"></i> Demo Boost (+500 Winter Coins)
+        </button>
+        <button onclick="triggerResetConfirmation()" id="reset-btn" class="w-full py-2.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 text-rose-300 font-bold text-xs transition-all">
+          <i class="fa-solid fa-rotate-left mr-1.5"></i> Reset Winter Arc & Start Fresh
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL: GOALS & HABITS EVOLUTION (MID-JOURNEY EDITING)                 -->
+  <!-- ===================================================================== -->
+  <div id="goals-evolution-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="w-full max-w-lg frost-panel rounded-3xl p-6 border border-ice-400/30 space-y-5 shadow-2xl max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between">
+        <div>
+          <span class="text-[10px] font-bold uppercase tracking-wider text-ice-400">Mid-Journey Evolution</span>
+          <h3 class="font-display font-bold text-lg text-white">Evolve Your Goals & Habits</h3>
+        </div>
+        <button onclick="closeGoalsEvolutionModal()" class="w-8 h-8 rounded-full bg-obsidian-800 hover:bg-obsidian-700 text-slate-400 flex items-center justify-center">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Update Target Goal -->
+      <div class="space-y-1.5">
+        <label class="block text-xs font-semibold text-slate-300">Update Winter Arc Target Goal</label>
+        <input id="evolve-goal-input" type="text" maxlength="80" class="w-full px-3.5 py-2.5 rounded-xl bg-obsidian-950 border border-slate-700 text-xs text-white focus:border-ice-400 focus:outline-none" />
+      </div>
+
+      <!-- Manage Active Habits (3 to 5 limit) -->
+      <div class="space-y-2">
+        <div class="flex items-center justify-between">
+          <label class="text-xs font-semibold text-slate-300">Manage Daily Habits (3 to 5 active)</label>
+          <span id="evolve-habit-count" class="text-[11px] font-mono text-ice-300">3/5</span>
+        </div>
+        <div id="evolve-habits-list" class="space-y-2 max-h-48 overflow-y-auto pr-1"></div>
+        <div class="flex gap-2 pt-1">
+          <input id="evolve-custom-habit" type="text" placeholder="Add new habit (e.g. Read 15 mins daily)" maxlength="48" class="flex-1 px-3 py-2 rounded-xl bg-obsidian-950 border border-slate-700 text-xs text-white focus:border-ice-400 focus:outline-none" />
+          <button type="button" onclick="addEvolveHabit()" class="px-3.5 py-2 rounded-xl bg-ice-500/20 hover:bg-ice-500/30 text-ice-300 border border-ice-400/30 font-bold text-xs">
+            + Add Habit
+          </button>
+        </div>
+      </div>
+
+      <div class="pt-2">
+        <button onclick="saveEvolveGoals()" class="w-full py-3 rounded-xl bg-gradient-to-r from-ice-500 to-blue-600 hover:from-ice-400 hover:to-blue-500 text-white font-bold text-xs shadow-lg transition-all">
+          Save Goal & Habit Updates ✓
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- JAVASCRIPT GAME ENGINE & STATE MANAGEMENT                             -->
+  <!-- ===================================================================== -->
+  <script src="data.js"></script>
+  <script src="sound.js"></script>
+  <script src="state.js"></script>
+  <script src="progression.js"></script>
+  <script src="rewards-config.js"></script>
+  <script src="avatar.js"></script>
+  <script src="onboarding.js"></script>
+  <script src="goals-backup.js"></script>
+  <script src="share-boost.js"></script>
+  <script src="hub.js"></script>
+  <script src="checkin.js"></script>
+  <script src="shop.js"></script>
+  <script src="progress.js"></script>
+  <script src="navigation.js"></script>
+  <script src="quests.js"></script>
+  <script src="celebration.js"></script>
+  <script src="level-gates.js"></script>
+  <script src="weekly-evolution.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>
