@@ -70,7 +70,7 @@
       document.getElementById('pose-hands').style.color = skinObj.hex;
 
       // Toggle Room Decor Upgrades
-      const allDecorIds = ['rug', 'plant', 'painting', 'couch', 'neon', 'bookshelf', 'window', 'desk', 'fireplace'];
+      const allDecorIds = ['rug', 'plant', 'painting', 'couch', 'neon', 'bookshelf', 'window', 'desk', 'fireplace', 'fairylights', 'aquarium'];
       allDecorIds.forEach(id => {
         const el = document.getElementById(`decor-${id}`);
         if (el) {
