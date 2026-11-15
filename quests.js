@@ -19,7 +19,7 @@ function startQuest(habitId) {
 function completeQuest(habit, proofType, proofData) {
   const today = getCurrentGameDateKey();
   if (habit.completedDate === today) return false; // duplicate guard
-  const c = habitCfg(habit), xp = XP_REWARDS[c.difficulty], coins = REWARD_COINS_PER_PROOF;
+  const c = habitCfg(habit), xp = XP_REWARDS[c.difficulty], coins = COIN_REWARDS.quest;
   const prev = { xp: gameState.totalXP, coins: gameState.coins, level: gameState.level };
   const wasFirstEver = gameState.completions.length === 0;
   const doneBefore = gameState.habits.filter(h => h.completedDate === today).length;
@@ -29,13 +29,14 @@ function completeQuest(habit, proofType, proofData) {
   if (gameState.activeTimers) delete gameState.activeTimers[habit.id];
   gameState.completions.push({ id: 'cmp_' + Date.now(), habitId: habit.id, habitText: habit.text, aspectId: habit.aspectId,
     date: today, proofType, difficulty: c.difficulty, completedAt: Date.now(), xp, coins, proofData });
+  updateStreakOnCompletion();
   awardXPAndCoins(xp, coins, { source: 'quest', txId: `quest:${habit.id}:${today}`, silent: true });
 
   const dayCleared = gameState.habits.every(h => h.completedDate === today);
   let totalXP = xp, totalCoins = coins;
   if (dayCleared) {
-    awardXPAndCoins(XP_REWARDS.dayCleared, ALL_DONE_BONUS_COINS, { source: 'daily-bonus', txId: `daily-bonus:${today}`, silent: true });
-    totalXP += XP_REWARDS.dayCleared; totalCoins += ALL_DONE_BONUS_COINS;
+    awardXPAndCoins(XP_REWARDS.dayCleared, COIN_REWARDS.dayCleared, { source: 'daily-bonus', txId: `daily-bonus:${today}`, silent: true });
+    totalXP += XP_REWARDS.dayCleared; totalCoins += COIN_REWARDS.dayCleared;
   }
   closeQuestModal();
   interactWithAvatar();
