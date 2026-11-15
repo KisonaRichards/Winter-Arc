@@ -1,4 +1,4 @@
-/* Application state & persistence (save/l/* Application state & persistence (save/load) */
+/* Application state & persistence (save/load) */
     // -----------------------------------------------------------------------
     // 3. APPLICATION STATE & PERSISTENCE
     // -----------------------------------------------------------------------
@@ -25,6 +25,7 @@
       habits: [], // [{ id, text, aspectId, completedDate }]
       targetGoal: '',
       signatureDataUrl: '',
+      soundEnabled: true, // sound effects on/off (toggle in the top bar)
       schemaVersion: 2,
       totalXP: 0,        // single source of truth for progression (see progression.js)
       level: 1,          // derived from totalXP
@@ -91,3 +92,4 @@
         console.error('Failed to load saved state:', e);
       }
     }
+
