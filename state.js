@@ -38,6 +38,11 @@
       coins: 100,
       streak: 0,
       bestStreak: 0,
+      shields: 1,            // Winter Shields: each protects the streak through one missed day
+      shieldsUsed: 0,
+      comebackPending: null, // set after a long absence; claimed on the next completed quest
+      lastComebackDate: null,
+      alertsDismissed: {},
       lastActiveDate: null, // last day a quest was completed (drives the streak)
       activeDayOffset: 0, // Allows "Next Day (Demo)" testing while enforcing strict 1/day rule
       shareFriendsCount: 0,
