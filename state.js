@@ -36,7 +36,9 @@
       programStartKey: null,
       completions: [],   // every completed quest: { id, habitId, habitText, aspectId, date, proofType, completedAt, xp, coins, proofData }
       coins: 100,
-      streak: 1,
+      streak: 0,
+      bestStreak: 0,
+      lastActiveDate: null, // last day a quest was completed (drives the streak)
       activeDayOffset: 0, // Allows "Next Day (Demo)" testing while enforcing strict 1/day rule
       shareFriendsCount: 0,
       shareRewardClaimed: false,
@@ -64,7 +66,8 @@
     function getCurrentGameDateKey() {
       const d = new Date();
       d.setDate(d.getDate() + (gameState.activeDayOffset || 0));
-      return d.toISOString().split('T')[0]; // YYYY-MM-DD
+      // Local date on the device (not UTC), so "today" matches the player's own calendar day
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; // YYYY-MM-DD
     }
 
     function getCurrentGameDateFormatted() {
@@ -92,4 +95,3 @@
         console.error('Failed to load saved state:', e);
       }
     }
-
