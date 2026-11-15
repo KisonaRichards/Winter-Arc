@@ -92,7 +92,7 @@
         try {
           const parsed = JSON.parse(e.target.result);
           if (parsed && parsed.player && parsed.habits) {
-            gameState = parsed;
+            gameState = migrateSave(parsed);
             saveState();
             SoundFX.levelUp();
             location.reload();
@@ -106,4 +106,3 @@
       };
       reader.readAsText(file);
     }
-
