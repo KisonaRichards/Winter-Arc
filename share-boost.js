@@ -3,7 +3,7 @@
     // 12. NAVIGATION, MODALS & NOTIFICATIONS
     // -----------------------------------------------------------------------
     function openShareBoostModal() {
-      document.getElementById('invite-link-text').textContent = `https://winterarc.gg/lockin?ref=${encodeURIComponent(gameState.player.name || 'athlete')}`;
+      document.getElementById('invite-link-text').textContent = `${location.href.split(/[?#]/)[0]}?ref=${encodeURIComponent(gameState.player.name || 'athlete')}`;
       renderShareBoostUI();
       document.getElementById('share-boost-modal').classList.remove('hidden');
     }
@@ -12,48 +12,39 @@
       document.getElementById('share-boost-modal').classList.add('hidden');
     }
 
-    function copyInviteLink() {
+    // Copies the invite link (modern clipboard API, with a fallback for older browsers).
+    async function copyInviteLink() {
       const linkText = document.getElementById('invite-link-text').textContent;
-        try{
-            await navigator.clipboard.writeText(linkText);
-        }catch{
-      const tempInput = document.createElement('input');
-      tempInput.value = linkText;
-      document.body.appendChild(tempInput);
-      tempInput.select();
-      document.execCommand('copy');
-      document.body.removeChild(tempInput);
-    }
+      try {
+        await navigator.clipboard.writeText(linkText);
+      } catch (e) {
+        const tempInput = document.createElement('input');
+        tempInput.value = linkText;
+        document.body.appendChild(tempInput);
+        tempInput.select();
+        document.execCommand('copy');
+        document.body.removeChild(tempInput);
+      }
       SoundFX.pop();
-      showToast('Invite link copied to clipboard!', 'info');
+      return true;
     }
 
     // Opens the device's native share sheet (Messages, WhatsApp, Instagram, etc.).
-async function shareInvite() {
-  const url = document.getElementById('invite-link-text').textContent;
-  
-  // Check if Web Share API is supported by the browser/device
-  if (navigator.share) {
-    try {
-      await navigator.share({
-        title: 'Winter Arc',
-        text: "I'm locking in this winter with Winter Arc. Join me:",
-        url: url
-      });
-      return 'shared';
-    } catch (e) {
-      // If the user cancels/closes the native share sheet, treat it as cancelled
-      if (e && e.name === 'AbortError') {
-        return 'cancelled';
+    // Returns 'shared', 'copied' (no share sheet available) or 'cancelled'.
+    async function shareInvite() {
+      const url = document.getElementById('invite-link-text').textContent;
+      if (navigator.share) {
+        try {
+          await navigator.share({ title: 'Winter Arc', text: "I'm locking in this winter with Winter Arc. Join me:", url });
+          return 'shared';
+        } catch (e) {
+          if (e && e.name === 'AbortError') return 'cancelled'; // user closed the share box
+        }
       }
-      console.warn('Native share failed, falling back to clipboard:', e);
+      await copyInviteLink();
+      return 'copied';
     }
-  }
 
-  // Fallback for desktop browsers or environments where navigator.share isn't available
-  await copyInviteLink();
-  return 'copied';
-}
     function renderShareBoostUI() {
       const count = gameState.shareFriendsCount || 0;
       document.getElementById('share-modal-progress').textContent = `${count} / 3`;
@@ -85,25 +76,33 @@ async function shareInvite() {
       }
     }
 
-    function claimShareBoostReward() {
-      if (gameState.shareRewardClaimed) return;
+    let shareInFlight = false; // blocks double-taps while the share sheet is open
+
+    async function claimShareBoostReward() {
+      if (gameState.shareRewardClaimed || shareInFlight) return;
 
       if (gameState.shareFriendsCount < 3) {
-       const result = await shareInvite();
-
-          //Do not increment count if the user dismissed the native share sheet
-        if (result === 'cancelled'){
-            showToast('Share cancelled.', 'info');
-            return;
+        shareInFlight = true;
+        let result;
+        try {
+          result = await shareInvite();
+        } finally {
+          shareInFlight = false;
         }
-        gameState.shareFriendsCount = (gameState.shareFriendsCount || 0) +1);
+
+        // Do not count it if the user dismissed the native share sheet
+        if (result === 'cancelled') {
+          showToast('Share cancelled.', 'info');
+          return;
+        }
+        gameState.shareFriendsCount = (gameState.shareFriendsCount || 0) + 1;
         SoundFX.pop();
         saveState();
         renderShareBoostUI();
         renderGameHub();
 
         const actionLabel = result === 'shared' ? 'Invite shared' : 'Invite link copied';
-        showToast(`${actionLabel}! ($gameState.shareFriendsCount}/3`, 'info');
+        showToast(`${actionLabel}! (${gameState.shareFriendsCount}/3)`, 'info');
       } else {
         gameState.shareRewardClaimed = true;
         closeShareBoostModal();
