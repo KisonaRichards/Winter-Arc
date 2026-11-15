@@ -83,6 +83,12 @@ function migrateSave(save) {
   if (!Array.isArray(save.weeklyReports)) save.weeklyReports = [];
   if (!save.activeTimers || typeof save.activeTimers !== 'object') save.activeTimers = {};
   if (typeof save.programStartKey === 'undefined') save.programStartKey = null;
+  if (typeof save.lastActiveDate === 'undefined') {
+    const last = save.completions.map(c => c.date).sort().pop();
+    save.lastActiveDate = last || null;
+    if (!last) save.streak = 0;
+  }
+  if (typeof save.bestStreak !== 'number') save.bestStreak = Math.max(0, save.streak || 0);
   save.schemaVersion = SAVE_SCHEMA_VERSION;
   syncDerivedProgress(save);
   return save;
