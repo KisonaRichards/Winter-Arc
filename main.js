@@ -4,7 +4,7 @@
     // -----------------------------------------------------------------------
     window.onload = function () {
       loadState();
-      if (!DEMO_MODE) { const b = document.getElementById('demo-next-day-btn'); if (b) b.classList.add('hidden'); }
+      if (!DEMO_MODE) document.querySelectorAll('[data-demo-only], #demo-next-day-btn').forEach(b => b.remove());
       if (gameState.onboarded) {
         document.getElementById('game-hub-screen').classList.remove('hidden');
         renderGameHub();
