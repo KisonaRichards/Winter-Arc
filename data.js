@@ -44,7 +44,10 @@
       { id: 'gymset', name: 'Stealth Compression + Joggers', desc: 'Fitted black top & tapered athletic joggers.', price: 150, badge: 'Fitness' },
       { id: 'hoodie', name: 'Frost Tech Fleece + Cargos', desc: 'Heavyweight ice hoodie & cargo sweatpants.', price: 240, badge: 'Cozy Fit' },
       { id: 'streetwear', name: 'Obsidian Bomber + Denim', desc: 'Structured bomber jacket & slim black pants.', price: 380, badge: 'Street' },
-      { id: 'luxury', name: 'Executive Suit + Trousers', desc: 'Midnight tailored blazer, shirt & dress pants.', price: 600, badge: 'Elite' }
+      { id: 'luxury', name: 'Executive Suit + Trousers', desc: 'Midnight tailored blazer, shirt & dress pants.', price: 600, badge: 'Elite' },
+      { id: 'frostdress', name: 'Frost Satin Dress + Boots', desc: 'Ice-blue belted long-sleeve dress with ankle boots.', price: 420, badge: 'Elegant' },
+      { id: 'pinkset', name: 'Pink Crop Hoodie + Pleated Skirt', desc: 'Soft pink cropped hoodie, pleated mini skirt, white sneakers.', price: 520, badge: 'Y2K' },
+      { id: 'puffer', name: 'Black Puffer Coat + Leggings', desc: 'Longline quilted puffer with a faux-fur collar.', price: 700, badge: 'Winter Elite' }
     ];
 
     const SHOP_ROOM_ITEMS = [
@@ -56,7 +59,9 @@
       { id: 'bookshelf', name: 'Mindset Bookshelf & Trophy', desc: 'Oak shelf stacked with wisdom & gold.', price: 300 },
       { id: 'window', name: 'Snowy Skyline Window', desc: 'Panoramic view of a winter night city.', price: 360 },
       { id: 'desk', name: 'Pro Creator Desk Setup', desc: 'Ultrawide monitor rig for deep work.', price: 450 },
-      { id: 'fireplace', name: 'Warm Stone Fireplace', desc: 'Crackling winter hearth for ultimate coziness.', price: 550 }
+      { id: 'fireplace', name: 'Warm Stone Fireplace', desc: 'Crackling winter hearth for ultimate coziness.', price: 550 },
+      { id: 'fairylights', name: 'Twinkle Fairy Lights', desc: 'Warm string lights glowing across the wall.', price: 300 },
+      { id: 'aquarium', name: 'Glow Reef Aquarium', desc: 'Illuminated fish tank with drifting tropical fish.', price: 650 }
     ];
 
     // DEMO MODE: shows the "Next Day" test button. Set to false for the real app release.
