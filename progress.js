@@ -12,6 +12,7 @@
     }
 
     function demoFastForwardWeek() {
+      if (!DEMO_MODE) return;
       gameState.lastWeeklyLogTimestamp = Date.now() - SEVEN_DAYS_MS - 1000;
       SoundFX.pop();
       saveState();
@@ -36,7 +37,7 @@
         lockBanner.classList.add('hidden');
         submitBtn.disabled = false;
         submitBtn.className = 'w-full py-2.5 rounded-xl bg-gradient-to-r from-ice-500 to-blue-600 hover:from-ice-400 hover:to-blue-500 text-white font-bold text-xs shadow-md transition-all cursor-pointer';
-        submitBtn.textContent = '+ Log Weekly Progress (+50 XP & +30 Coins)';
+        submitBtn.textContent = `+ Log Weekly Progress (+${XP_REWARDS.weeklyLog} XP & +${COIN_REWARDS.weeklyLog} Coins)`;
       }
 
       // Dynamically render inputs tailored to the user's chosen aspects & units
@@ -138,8 +139,8 @@
       lineInput.value = '';
       saveState();
       renderMoodTracker();
-      awardXPAndCoins(10, 10, { source: 'mood-log' });
-      showToast('Daily mood & reflection saved! +10 Coins', 'success');
+      const paid = awardXPAndCoins(XP_REWARDS.dailyReflection, COIN_REWARDS.dailyReflection, { source: 'mood-log', txId: `mood-log:${getCurrentGameDateKey()}` });
+      showToast(paid ? `Daily mood & reflection saved! +${XP_REWARDS.dailyReflection} XP & +${COIN_REWARDS.dailyReflection} Coins` : 'Daily mood & reflection saved! (Reward already claimed today)', 'success');
     }
 
     function renderMoodTracker() {
@@ -217,7 +218,7 @@
       });
 
       document.getElementById('track-note-input').value = '';
-      awardXPAndCoins(50, 30, { source: 'weekly-log' });
+      awardXPAndCoins(XP_REWARDS.weeklyLog, COIN_REWARDS.weeklyLog, { source: 'weekly-log' });
       showToast('Weekly log recorded! Next check-in unlocks in 7 days.', 'success');
     }
 
@@ -269,6 +270,7 @@
     }
 
     function demoBoostCoins() {
+      if (!DEMO_MODE) return;
       gameState.coins += 500;
       SoundFX.coin();
       saveState();
