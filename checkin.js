@@ -188,10 +188,10 @@
     function startNewDayCycle() {
       if (!DEMO_MODE) return;
       gameState.activeDayOffset = (gameState.activeDayOffset || 0) + 1;
-      gameState.streak += 1;
+      refreshStreak(); // skipping a day without a completion now breaks the streak
       SoundFX.pop();
       saveState();
       renderGameHub();
-      showToast(`Day ${gameState.streak} (${getCurrentGameDateFormatted()}) unlocked! Daily check-ins reset.`, 'info');
-      triggerAvatarSpeech(`Day ${gameState.streak} of the Winter Arc! Fresh habits ready! ❄️`);
+      showToast(`New day (${getCurrentGameDateFormatted()}) unlocked! Daily check-ins reset.`, 'info');
+      triggerAvatarSpeech('Fresh day. Fresh habits. Lock in! ❄️');
     }
