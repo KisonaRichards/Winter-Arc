@@ -24,6 +24,32 @@
       showToast('Invite link copied to clipboard!', 'info');
     }
 
+    // Opens the device's native share sheet (Messages, WhatsApp, Instagram, etc.).
+async function shareInvite() {
+  const url = document.getElementById('invite-link-text').textContent;
+  
+  // Check if Web Share API is supported by the browser/device
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: 'Winter Arc',
+        text: "I'm locking in this winter with Winter Arc. Join me:",
+        url: url
+      });
+      return 'shared';
+    } catch (e) {
+      // If the user cancels/closes the native share sheet, treat it as cancelled
+      if (e && e.name === 'AbortError') {
+        return 'cancelled';
+      }
+      console.warn('Native share failed, falling back to clipboard:', e);
+    }
+  }
+
+  // Fallback for desktop browsers or environments where navigator.share isn't available
+  await copyInviteLink();
+  return 'copied';
+}
     function renderShareBoostUI() {
       const count = gameState.shareFriendsCount || 0;
       document.getElementById('share-modal-progress').textContent = `${count} / 3`;
