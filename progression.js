@@ -88,6 +88,11 @@ function migrateSave(save) {
     save.lastActiveDate = last || null;
     if (!last) save.streak = 0;
   }
+  if (typeof save.shields !== 'number') save.shields = 1;
+  if (typeof save.shieldsUsed !== 'number') save.shieldsUsed = 0;
+  if (!('comebackPending' in save)) save.comebackPending = null;
+  if (!('lastComebackDate' in save)) save.lastComebackDate = null;
+  if (!save.alertsDismissed || typeof save.alertsDismissed !== 'object') save.alertsDismissed = {};
   if (typeof save.bestStreak !== 'number') save.bestStreak = Math.max(0, save.streak || 0);
   save.schemaVersion = SAVE_SCHEMA_VERSION;
   syncDerivedProgress(save);
