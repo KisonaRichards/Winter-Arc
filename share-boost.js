@@ -14,12 +14,16 @@
 
     function copyInviteLink() {
       const linkText = document.getElementById('invite-link-text').textContent;
+        try{
+            await navigator.clipboard.writeText(linkText);
+        }catch{
       const tempInput = document.createElement('input');
       tempInput.value = linkText;
       document.body.appendChild(tempInput);
       tempInput.select();
       document.execCommand('copy');
       document.body.removeChild(tempInput);
+    }
       SoundFX.pop();
       showToast('Invite link copied to clipboard!', 'info');
     }
@@ -85,13 +89,21 @@ async function shareInvite() {
       if (gameState.shareRewardClaimed) return;
 
       if (gameState.shareFriendsCount < 3) {
-        copyInviteLink();
-        gameState.shareFriendsCount += 1;
+       const result = await shareInvite();
+
+          //Do not increment count if the user dismissed the native share sheet
+        if (result === 'cancelled'){
+            showToast('Share cancelled.', 'info');
+            return;
+        }
+        gameState.shareFriendsCount = (gameState.shareFriendsCount || 0) +1);
         SoundFX.pop();
         saveState();
         renderShareBoostUI();
         renderGameHub();
-        showToast(`Invite #${gameState.shareFriendsCount} sent! (${gameState.shareFriendsCount}/3)`, 'info');
+
+        const actionLabel = result === 'shared' ? 'Invite shared' : 'Invite link copied';
+        showToast(`${actionLabel}! ($gameState.shareFriendsCount}/3`, 'info');
       } else {
         gameState.shareRewardClaimed = true;
         closeShareBoostModal();
