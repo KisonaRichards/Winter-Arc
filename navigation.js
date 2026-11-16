@@ -35,7 +35,7 @@
         btn.innerHTML = '<i class="fa-solid fa-triangle-exclamation mr-1.5"></i> Tap Again to Confirm Full Reset';
         setTimeout(() => {
           resetConfirmPending = false;
-          btn.innerHTML = '<i class="fa-solid fa-rotate-left mr-1.5"></i> Reset Winter Arc & Start Fresh';
+          btn.innerHTML = '<i class="fa-solid fa-rotate-left mr-1.5"></i> Reset ' + APP_NAME + ' & Start Fresh';
         }, 4000);
       } else {
         localStorage.removeItem(STORAGE_KEY);
