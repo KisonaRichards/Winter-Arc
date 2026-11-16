@@ -214,7 +214,7 @@
       gameState.metricHistory.unshift({
         date: getCurrentGameDateFormatted(),
         summary: summaryParts.join(' • '),
-        note: noteVal || 'Weekly Winter Arc milestone logged.'
+        note: noteVal || `Weekly ${SEASON.arc} milestone logged.`
       });
 
       document.getElementById('track-note-input').value = '';
