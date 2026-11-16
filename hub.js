@@ -87,7 +87,7 @@
       if (count === 0) label.textContent = `Starter Bare Room (0/${total} Upgrades)`;
       else if (count < 5) label.textContent = `Cozy Starter Loft (${count}/${total} Upgrades)`;
       else if (count < total) label.textContent = `Locked-In Sanctuary (${count}/${total} Upgrades)`;
-      else label.textContent = 'MAXED Winter Arc Penthouse 👑';
+      else label.textContent = `MAXED ${SEASON.arc} Penthouse 👑`;
     }
 
     function interactWithAvatar() {
