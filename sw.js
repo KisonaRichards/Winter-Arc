@@ -1,4 +1,4 @@
-/* Winter Arc service worker: network-first (so updates always arrive), cached copy when offline. */
+/* Levly service worker: network-first (so updates always arrive), cached copy when offline. */
 const CACHE = 'winter-arc-v1';
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', e => e.waitUntil(
