@@ -2,7 +2,7 @@
     // -----------------------------------------------------------------------
     // 3. APPLICATION STATE & PERSISTENCE
     // -----------------------------------------------------------------------
-    const STORAGE_KEY = 'winter_arc_rpg_state_v2';
+    const STORAGE_KEY = 'winter_arc_rpg_state_v2'; // keep this key unchanged so existing saves are not lost after the rename
 
     let gameState = {
       onboarded: false,
