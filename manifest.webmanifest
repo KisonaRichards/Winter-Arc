@@ -1,7 +1,7 @@
 {
-  "name": "Winter Arc",
-  "short_name": "Winter Arc",
-  "description": "Lock-in life RPG: build habits, level up, decorate your room.",
+  "name": "Levly: Habit RPG",
+  "short_name": "Levly",
+  "description": "Habit RPG: turn daily habits into XP, level up and decorate your room.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
