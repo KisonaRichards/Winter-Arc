@@ -76,7 +76,7 @@
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(gameState, null, 2));
       const downloadAnchor = document.createElement('a');
       downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", `winter_arc_save_${getCurrentGameDateKey()}.json`);
+      downloadAnchor.setAttribute("download", `levly_save_${getCurrentGameDateKey()}.json`);
       document.body.appendChild(downloadAnchor);
       downloadAnchor.click();
       downloadAnchor.remove();
