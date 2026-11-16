@@ -64,8 +64,13 @@
       { id: 'aquarium', name: 'Glow Reef Aquarium', desc: 'Illuminated fish tank with drifting tropical fish.', price: 650 }
     ];
 
+    // ---- Branding (change SEASON each season; the app name stays) ----
+    const APP_NAME = 'Levly';
+    const APP_TAGLINE = 'Habit RPG';
+    const SEASON = { name: 'Winter', arc: 'Winter Arc', icon: '❄️' };
+
     // DEMO MODE: shows the "Next Day" test button. Set to false for the real app release.
-    const DEMO_MODE = false;
+    const DEMO_MODE = true;
     // Public web address of the game. Used for invite links when running inside a native app (where location is not a public URL).
     const PUBLIC_APP_URL = 'https://kisonarichards.github.io/Winter-Arc/';
     // Slow-burn rewards so players can't max everything out in a few days
@@ -100,14 +105,14 @@
       'Habit Builder',
       'Winter Grinder',
       'Relentless Architect',
-      'Winter Arc Legend'
+      `${SEASON.arc} Legend`
     ];
 
     const AVATAR_QUOTES = [
       "Lock in! Every rep and every habit counts. ❄️",
       "Remember why you signed the decree!",
       "From a bare room to an empire—keep stacking coins!",
-      "No days off during the Winter Arc!",
+      `No days off during the ${SEASON.arc}!`,
       "Future you is watching. Make them proud! 🔥",
       "Snap real proof and claim your XP!"
     ];
