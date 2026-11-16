@@ -65,7 +65,9 @@
     ];
 
     // DEMO MODE: shows the "Next Day" test button. Set to false for the real app release.
-    const DEMO_MODE = true;
+    const DEMO_MODE = false;
+    // Public web address of the game. Used for invite links when running inside a native app (where location is not a public URL).
+    const PUBLIC_APP_URL = 'https://kisonarichards.github.io/Winter-Arc/';
     // Slow-burn rewards so players can't max everything out in a few days
     const REWARD_XP_PER_PROOF = 10, REWARD_COINS_PER_PROOF = 10;
     const ALL_DONE_BONUS_XP = 60, ALL_DONE_BONUS_COINS = 10;
