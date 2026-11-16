@@ -344,7 +344,7 @@
         } else if (currentWizardStep === 2) {
           if (gameState.aspects.length < 2) {
             SoundFX.error();
-            showToast('Select at least 2 Winter Arc aspects!', 'warning');
+            showToast(`Select at least 2 ${SEASON.arc} aspects!`, 'warning');
             return;
           }
         } else if (currentWizardStep === 3) {
@@ -354,7 +354,7 @@
             return;
           }
           const goal = document.getElementById('input-target-goal').value.trim();
-          gameState.targetGoal = goal || 'Stay 100% consistent and level up my life this Winter Arc.';
+          gameState.targetGoal = goal || 'Stay 100% consistent and level up my life this ' + SEASON.arc + '.';
         }
       }
 
@@ -465,7 +465,7 @@
     function completeOnboarding() {
       if (!hasSignedCanvas) {
         SoundFX.error();
-        showToast('Sign the Winter Arc contract first to seal your decree!', 'warning');
+        showToast(`Sign the ${SEASON.arc} contract first to seal your decree!`, 'warning');
         return;
       }
 
@@ -480,7 +480,7 @@
       gameState.metricHistory.push({
         date: getCurrentGameDateFormatted(),
         summary: `${gameState.player.startWeight} ${gameState.player.weightUnit}`,
-        note: 'Week 1 Baseline: Entered the Winter Arc bare room.'
+        note: `Week 1 Baseline: Entered the ${SEASON.arc} bare room.`
       });
 
       saveState();
