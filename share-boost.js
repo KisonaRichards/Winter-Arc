@@ -2,8 +2,13 @@
     // -----------------------------------------------------------------------
     // 12. NAVIGATION, MODALS & NOTIFICATIONS
     // -----------------------------------------------------------------------
+    function getShareBaseUrl() {
+      const publicWeb = /^https?:$/.test(location.protocol) && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1';
+      return publicWeb ? location.href.split(/[?#]/)[0] : PUBLIC_APP_URL;
+    }
+
     function openShareBoostModal() {
-      document.getElementById('invite-link-text').textContent = `${location.href.split(/[?#]/)[0]}?ref=${encodeURIComponent(gameState.player.name || 'athlete')}`;
+      document.getElementById('invite-link-text').textContent = `${getShareBaseUrl()}?ref=${encodeURIComponent(gameState.player.name || 'athlete')}`;
       renderShareBoostUI();
       document.getElementById('share-boost-modal').classList.remove('hidden');
     }
@@ -35,7 +40,7 @@
       const url = document.getElementById('invite-link-text').textContent;
       if (navigator.share) {
         try {
-          await navigator.share({ title: 'Winter Arc', text: "I'm locking in this winter with Winter Arc. Join me:", url });
+          await navigator.share({ title: APP_NAME, text: `I'm locking in with ${APP_NAME}. Join me:`, url });
           return 'shared';
         } catch (e) {
           if (e && e.name === 'AbortError') return 'cancelled'; // user closed the share box
